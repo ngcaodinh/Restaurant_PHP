@@ -1,0 +1,1 @@
+-- Tệp SQL để tạo cơ sở dữ liệu và bảng

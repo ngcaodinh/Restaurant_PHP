@@ -1,0 +1,2 @@
+<?php
+// Trang đăng ký

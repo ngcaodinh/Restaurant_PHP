@@ -1,0 +1,2 @@
+<?php
+// Thêm khách hàng
