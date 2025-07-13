@@ -8,7 +8,7 @@ class Router {
 
     public function route() {
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $path = rtrim(str_replace('/Restaurant_CTUT_PHP', '', $path), '/');
+        $path = rtrim(str_replace('/Restaurant_PHP', '', $path), '/');
         $path = $path === '' ? '/' : $path;
 
         if (isset($this->routes[$path])) {

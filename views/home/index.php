@@ -6,8 +6,8 @@
     <title>CTUT Restaurant - Món ngon sinh viên</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/Restaurant_CTUT_PHP/assets/css/style.css">
-    <link rel="stylesheet" href="/Restaurant_CTUT_PHP/assets/css/responsive.css">
+    <link rel="stylesheet" href="/Restaurant_PHP/assets/css/style.css">
+    <link rel="stylesheet" href="/Restaurant_PHP/assets/css/responsive.css">
 </head>
 <body>
     <!-- Social Media Sidebar -->
@@ -149,7 +149,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
-    <script src="/Restaurant_CTUT_PHP/assets/js/main.js"></script>
-    <script src="/Restaurant_CTUT_PHP/assets/js/cart.js"></script>
+    <script src="/Restaurant_PHP/assets/js/main.js"></script>
+    <script src="/Restaurant_PHP/assets/js/cart.js"></script>
 </body>
 </html>
