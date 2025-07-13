@@ -66,12 +66,14 @@ body {
 }
 
 .social-item.instagram {
-  background: linear-gradient(45deg,
-      #f09433,
-      #e6683c,
-      #dc2743,
-      #cc2366,
-      #bc1888);
+  background: linear-gradient(
+    45deg,
+    #f09433,
+    #e6683c,
+    #dc2743,
+    #cc2366,
+    #bc1888
+  );
 }
 
 .social-item.phone {
@@ -111,9 +113,11 @@ body {
   position: absolute;
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle,
-      rgba(255, 255, 255, 0.3) 10%,
-      transparent 10.01%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 10%,
+    transparent 10.01%
+  );
   transform: scale(0);
   transition: transform 0.3s ease;
 }
@@ -167,7 +171,6 @@ header {
 }
 
 @keyframes floatNoodle {
-
   0%,
   100% {
     transform: translateY(0);
@@ -222,7 +225,7 @@ header {
 }
 
 /* ✅ Icon xoay khi focus */
-.search-bar input:focus+.search-icon {
+.search-bar input:focus + .search-icon {
   animation: spinSearch 0.6s ease;
 }
 
@@ -357,7 +360,8 @@ header {
 .hero {
   height: 100vh;
   background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-    url("https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80") center/cover;
+    url("https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")
+      center/cover;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -450,9 +454,11 @@ header {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg,
-      rgba(255, 107, 107, 0.1),
-      rgba(255, 165, 0, 0.1));
+  background: linear-gradient(
+    45deg,
+    rgba(255, 107, 107, 0.1),
+    rgba(255, 165, 0, 0.1)
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 1;
@@ -913,10 +919,12 @@ footer {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg,
-      transparent 30%,
-      rgba(255, 107, 53, 0.1) 50%,
-      transparent 70%);
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 107, 53, 0.1) 50%,
+    transparent 70%
+  );
   animation: shimmer 3s infinite;
   pointer-events: none;
 }
@@ -935,9 +943,11 @@ footer {
 .best-seller-section {
   margin-bottom: 30px;
   padding: 20px;
-  background: linear-gradient(135deg,
-      rgba(255, 107, 53, 0.1),
-      rgba(247, 147, 30, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 53, 0.1),
+    rgba(247, 147, 30, 0.1)
+  );
   border-radius: 15px;
   border: 2px solid rgba(255, 107, 53, 0.2);
 }
