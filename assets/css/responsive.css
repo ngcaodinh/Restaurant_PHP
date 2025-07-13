@@ -106,3 +106,42 @@
     border: 2px solid #fff;
   }
 }
+
+/* footer */
+.item {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 50px;
+  margin-right: 50px;
+}
+.about .box {
+  height: 100%;
+}
+#aboutUs {
+  margin-bottom: 0px;
+}
+#about {
+  margin: 0px;
+  text-align: justify;
+}
+.instruction {
+  margin-bottom: 0px;
+}
+#instruct {
+  margin: 0px;
+}
+.address {
+  margin-bottom: 0px;
+}
+#ars {
+  margin: 0px;
+}
+#last {
+  text-align: center;
+}
+.box {
+  width: 60%;
+  height: 45%;
+  margin: 10px;
+  /* background-color: rgb(74, 49, 49,20%); */
+}
