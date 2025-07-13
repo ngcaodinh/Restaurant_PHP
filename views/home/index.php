@@ -20,33 +20,58 @@
     </div>
 
     <!-- Header -->
-    <header>
-        <div class="header-container">
-            <div class="logo">🍜 CTUT Restaurant</div>
-            <nav>
-                <ul>
-                    <li><a href="#home">Trang chủ</a></li>
-                    <li><a href="#menu">Menu</a></li>
-                    <li><a href="#tables">Đặt bàn</a></li>
-                    <li><a href="#contact">Liên hệ</a></li>
-                    <li><a href="#login">Đăng nhập</a></li>
-                </ul>
-                <div class="nav-icons">
-                    <div class="nav-icon" onclick="toggleWishlist()">
-                        <i class="fas fa-heart"></i>
-                        <span class="cart-count" id="wishlist-count">0</span>
-                    </div>
-                    <div class="nav-icon" onclick="toggleCart()">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-count" id="cart-count">0</span>
-                    </div>
-                    <div class="nav-icon" onclick="login()">
-                        <i class="fas fa-user"></i>
-                    </div>
-                </div>
-            </nav>
+<header>
+  <div class="header-container">
+    <div class="top-nav">
+      <div class="logo">
+        <a href="#home" class="logo">
+            <span class="logo-icon">🍜</span>
+            <span class="logo-text">CTUT Restaurant</span>
+        </a>
+      </div>
+      <div class="search-bar">
+        <input type="text" placeholder="Tìm kiếm..." id="searchInput" />
+        <i class="fas fa-search search-icon"></i>
+      </div>
+      <div class="hamburger">
+        <i class="fas fa-bars"></i>
+      </div>
+      <nav class="menu-nav">
+        <ul>
+          <li><a href="#home">Trang chủ</a></li>
+          <li><a href="#menu">Menu</a></li>
+          <li class="dropdown">
+            <a href="#about">Giới thiệu</a>
+            <div class="dropdown-content">
+              <a href="#about-us">Về chúng tôi</a>
+              <a href="#team">Đội ngũ</a>
+            </div>
+          </li>
+          <li class="dropdown">
+            <a href="#contact">Liên hệ</a>
+            <div class="dropdown-content">
+              <a href="#support">Hỗ trợ</a>
+              <a href="#feedback">Góp ý</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+      <div class="nav-icons">
+        <div class="icon-wrapper">
+          <i class="nav-icon fas fa-shopping-cart"></i>
+          <span class="cart-count" id="cart-count">0</span>
         </div>
-    </header>
+        <div class="icon-wrapper">
+          <i class="nav-icon fas fa-heart"></i>
+          <span class="cart-count" id="wishlist-count">0</span>
+        </div>
+        <div class="icon-wrapper" onclick="toggleAccountDropdown()">
+          <i class="nav-icon fas fa-user"></i>
+        </div>
+      </div>     
+    </div>
+  </div>
+</header>
 
     <!-- Hero Section -->
     <section class="hero" id="home">

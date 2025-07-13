@@ -1,82 +1,106 @@
 @media (max-width: 768px) {
-    .social-sidebar {
-        display: none;
-    }
-    
-    .hero h1 {
-        font-size: 2.5rem;
-    }
-    
-    .hero p {
-        font-size: 1.2rem;
-    }
-    
-    nav ul {
-        gap: 15px;
-    }
-    
-    nav ul li a {
-        font-size: 0.9rem;
-    }
-    
-    .dish-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .nav-icons {
-        gap: 0.5rem;
-    }
+  .social-sidebar {
+    display: none;
+  }
 
-    .dish-actions-bottom {
-        flex-direction: column;
-        gap: 8px;
-    }
+  .hero h1 {
+    font-size: 2.5rem;
+  }
 
-    .btn {
-        width: 100%;
-    }
+  .hero p {
+    font-size: 1.2rem;
+  }
 
-    .modal-image:hover img {
-        transform: scale(1.2);
-    }
-    
-    .zoom-modal-content {
-        max-width: 95%;
-        max-height: 95%;
-    }
-    
-    .zoom-close {
-        top: 10px;
-        right: 15px;
-        font-size: 30px;
-    }
+  nav ul {
+    gap: 15px;
+  }
 
-    .best-seller-badge {
-        padding: 6px 12px;
-        font-size: 0.7rem;
-    }
+  nav ul li a {
+    font-size: 0.9rem;
+  }
 
-    .filter-btn {
-        padding: 8px 15px;
-        font-size: 0.9rem;
-        margin: 2px;
-    }
+  .dish-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-icons {
+    gap: 0.5rem;
+  }
+
+  .dish-actions-bottom {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .modal-image:hover img {
+    transform: scale(1.2);
+  }
+
+  .zoom-modal-content {
+    max-width: 95%;
+    max-height: 95%;
+  }
+
+  .zoom-close {
+    top: 10px;
+    right: 15px;
+    font-size: 30px;
+  }
+
+  .best-seller-badge {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+  }
+
+  .filter-btn {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    margin: 2px;
+  }
 }
 
 @media (max-width: 480px) {
-    .header-container {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    nav ul {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
+  .header-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .search-bar {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .menu-nav ul {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .nav-icons {
+    gap: 1rem;
+  }
+}
+@media (max-width: 768px) {
+  .menu-nav {
+    display: none;
+  }
+
+  .hamburger {
+    display: block;
+  }
 }
 
+@media (min-width: 769px) {
+  .hamburger {
+    display: none;
+  }
+}
 @media (prefers-contrast: high) {
-    .social-item {
-        border: 2px solid #fff;
-    }
+  .social-item {
+    border: 2px solid #fff;
+  }
 }
