@@ -6,6 +6,6 @@ $router = new Router();
 $router->addRoute('/', 'HomeController', 'index');
 $router->route();
 ?>
-//test MQ
+<!-- //test MQ
 //Cao Dinh test
-// Minh thuan test 
+// Minh thuan test  -->
