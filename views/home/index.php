@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="/Restaurant_PHP/assets/css/style.css">
     <link rel="stylesheet" href="/Restaurant_PHP/assets/css/responsive.css">
 </head>
+
 <body>
     <!-- Social Media Sidebar -->
     <div class="social-sidebar">
@@ -22,29 +24,54 @@
     <!-- Header -->
     <header>
         <div class="header-container">
-            <div class="logo">🍜 CTUT Restaurant</div>
-            <nav>
-                <ul>
-                    <li><a href="#home">Trang chủ</a></li>
-                    <li><a href="#menu">Menu</a></li>
-                    <li><a href="#tables">Đặt bàn</a></li>
-                    <li><a href="#contact">Liên hệ</a></li>
-                    <li><a href="#login">Đăng nhập</a></li>
-                </ul>
+            <div class="top-nav">
+                <div class="logo">
+                    <a href="#home" class="logo">
+                        <span class="logo-icon">🍜</span>
+                        <span class="logo-text">CTUT Restaurant</span>
+                    </a>
+                </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Tìm kiếm..." id="searchInput" />
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <nav class="menu-nav">
+                    <ul>
+                        <li><a href="#home">Trang chủ</a></li>
+                        <li><a href="#menu">Menu</a></li>
+                        <li class="dropdown">
+                            <a href="#about">Giới thiệu</a>
+                            <div class="dropdown-content">
+                                <a href="#about-us">Về chúng tôi</a>
+                                <a href="#team">Đội ngũ</a>
+                            </div>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#contact">Liên hệ</a>
+                            <div class="dropdown-content">
+                                <a href="#support">Hỗ trợ</a>
+                                <a href="#feedback">Góp ý</a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
                 <div class="nav-icons">
-                    <div class="nav-icon" onclick="toggleWishlist()">
-                        <i class="fas fa-heart"></i>
-                        <span class="cart-count" id="wishlist-count">0</span>
-                    </div>
-                    <div class="nav-icon" onclick="toggleCart()">
-                        <i class="fas fa-shopping-cart"></i>
+                    <div class="icon-wrapper">
+                        <i class="nav-icon fas fa-shopping-cart"></i>
                         <span class="cart-count" id="cart-count">0</span>
                     </div>
-                    <div class="nav-icon" onclick="login()">
-                        <i class="fas fa-user"></i>
+                    <div class="icon-wrapper">
+                        <i class="nav-icon fas fa-heart"></i>
+                        <span class="cart-count" id="wishlist-count">0</span>
+                    </div>
+                    <div class="icon-wrapper" onclick="toggleAccountDropdown()">
+                        <i class="nav-icon fas fa-user"></i>
                     </div>
                 </div>
-            </nav>
+            </div>
         </div>
     </header>
 
@@ -125,44 +152,20 @@
         </div>
     </section>
 
-    <!-- Footer--> 
-       <footer id="contact">
-         <div class="footer" >
-    <div class="item" >
-        <div class="about box" >
-          <h2 id="aboutUs" >Về chúng tôi</h2>
-          <hr />
-          <p id="about" >
-            CTUT Restaurant là địa điểm ẩm thực hàng đầu cho sinh viên và giảng viên CTUT, là ngôi nhà thứ hai nơi bạn tìm thấy những bữa ăn ngon, chất lượng, giá cả cạnh tranh, không gian thoáng mát rộng rãi và đặt biệt luôn lắng nghe và phục vụ tận tâm.
-          </p>
-         
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="footer-content">
+            <div class="footer-info">
+                <h3>🍜 CTUT Restaurant</h3>
+                <p>📍 123 Đường ABC, Quận Ninh Kiều, TP. Cần Thơ</p>
+                <p>📧 contact@ctutrestaurant.com</p>
+                <p>📞 Hotline: 0123 456 789</p>
+                <p>🕒 Mở cửa: 6:00 - 22:00 (Thứ 2 - Chủ nhật)</p>
+            </div>
+            <div style="margin-top: 20px;">
+                <p>© 2024 CTUT Restaurant. Món ngon dành cho sinh viên!</p>
+            </div>
         </div>
-  
-        <div class="box instruct">
-          <h2 id="instruction" >Hướng dẫn</h2>
-          <hr />
-          <p class="instruct" >Hướng dẫn đăng ký tài khoản.</p>
-          <p class="instruct" >Hướng dẫn mua hàng.</p>
-          <p class="instruct" >Hỗ trợ đặt món.</p>
-          <p class="instruct" >Hướng dẫn thanh toán.</p>
-          <p class="instruct" >Điểu khoản dịch vụ.</p>
-          <!-- <img src="./img/Bánh-mì-362.png" alt="" id="logoBread"> -->
-        </div>
-        <div class="box address">
-          <h2 id="address" >Địa chỉ</h2>
-          <hr />
-          <p class="ars" >123 Đường ABC, Quận Ninh Kiều, TP. Cần Thơ</p>
-          <p class="ars" >Hotline: 0123 456 789</p>
-          <p class="ars" >Mở cửa: 6:00 - 22:00 (Thứ 2 - Chủ nhật)</p> 
-          <br>
-          <iframe id="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3928.636965743075!2d105.76547037497194!3d10.04678597222804!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31a0880f08006ffb%3A0x9a745510330faf4e!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBL4bu5IHRodeG6rXQgLSBDw7RuZyBuZ2jhu4cgQ-G6p24gVGjGoQ!5e0!3m2!1svi!2s!4v1750831528839!5m2!1svi!2s" width="100%" height="200px" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-          </iframe>
-        </div>
-</div>
-  <p id="last" >
-    © 2024 CTUT Restaurant. Món ngon dành cho sinh viên!
-  </p>
-    </div>
     </footer>
 
     <!-- Scroll to top button -->
@@ -176,4 +179,5 @@
     <script src="/Restaurant_PHP/assets/js/main.js"></script>
     <script src="/Restaurant_PHP/assets/js/cart.js"></script>
 </body>
+
 </html>
