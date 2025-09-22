@@ -1,0 +1,20 @@
+footer {
+  background: #1f2937;
+  color: white;
+  padding: 40px 20px;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footer-info {
+  margin-bottom: 20px;
+}
+
+.footer-info p {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}

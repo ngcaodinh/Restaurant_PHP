@@ -1,0 +1,10 @@
+# Bỏ qua file google config
+config/google.php
+
+# Bỏ qua các file nhạy cảm khác (nếu có)
+.env
+*.log
+
+# Bỏ qua thư mục tạm
+/vendor/
+node_modules/
