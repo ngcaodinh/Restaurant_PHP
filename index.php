@@ -8,11 +8,186 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once 'includes/config.php';
 require_once 'includes/db_connect.php';
 require_once 'includes/functions.php';
+require_once 'includes/auth.php';
 
 $page_title = 'CTUT Restaurant - Món ngon sinh viên';
-
 $errors = [];
 $dishes = [];
+// Xử lý yêu cầu AJAX add_to_cart
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_to_cart') {
+    header('Content-Type: application/json');
+    
+    try {
+        if (!is_logged_in()) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Vui lòng đăng nhập để tiếp tục'
+            ]);
+            exit;
+        }
+
+        $user_id = $_SESSION['user_id'];
+        $dish_id = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
+
+        if (!$dish_id) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'ID món ăn không hợp lệ'
+            ]);
+            exit;
+        }
+
+        // Lấy hoặc tạo giỏ hàng
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('SELECT id FROM carts WHERE user_id = ? AND status = "active"');
+        $stmt->execute([$user_id]);
+        $cart = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$cart) {
+            $stmt = $pdo->prepare('INSERT INTO carts (user_id, status) VALUES (?, "active")');
+            $stmt->execute([$user_id]);
+            $cart_id = $pdo->lastInsertId();
+        } else {
+            $cart_id = $cart['id'];
+        }
+
+        // Kiểm tra xem món đã có trong giỏ hàng chưa
+        $stmt = $pdo->prepare('SELECT id, quantity FROM cart_items WHERE cart_id = ? AND dish_id = ? AND deleted_at IS NULL');
+        $stmt->execute([$cart_id, $dish_id]);
+        $cart_item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($cart_item) {
+            // Tăng số lượng nếu món đã có
+            $stmt = $pdo->prepare('UPDATE cart_items SET quantity = quantity + 1 WHERE id = ?');
+            $stmt->execute([$cart_item['id']]);
+        } else {
+            // Thêm món mới vào giỏ hàng
+            $stmt = $pdo->prepare('INSERT INTO cart_items (cart_id, dish_id, quantity) VALUES (?, ?, 1)');
+            $stmt->execute([$cart_id, $dish_id]);
+        }
+
+        // Cập nhật sales_count cho món ăn
+        $stmt = $pdo->prepare('UPDATE dishes SET sales_count = sales_count + 1 WHERE id = ?');
+        $stmt->execute([$dish_id]);
+
+        // Đếm lại số lượng món trong giỏ hàng
+        $stmt = $pdo->prepare('SELECT COUNT(*) as count FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ? AND ci.deleted_at IS NULL');
+        $stmt->execute([$user_id]);
+        $cart_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Đã thêm món vào giỏ hàng',
+            'cart_count' => $cart_count
+        ]);
+        exit;
+    } catch (PDOException $e) {
+        error_log("Add to cart error: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'Có lỗi xảy ra khi thêm món vào giỏ hàng'
+        ]);
+        exit;
+    }
+}
+
+// Xử lý yêu cầu AJAX update_counters
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_counters') {
+    header('Content-Type: application/json');
+    
+    try {
+        $cart_count = 0;
+        $wishlist_count = 0;
+        if (is_logged_in()) {
+            $user_id = $_SESSION['user_id'];
+            $pdo = Database::getInstance();
+
+            // Đếm số lượng món trong giỏ hàng
+            $stmt = $pdo->prepare('SELECT COUNT(*) as count FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ? AND ci.deleted_at IS NULL');
+            $stmt->execute([$user_id]);
+            $cart_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+            // Đếm số lượng món trong danh sách yêu thích
+            $stmt = $pdo->prepare('SELECT COUNT(*) as count FROM favorites WHERE user_id = ?');
+            $stmt->execute([$user_id]);
+            $wishlist_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        }
+
+        echo json_encode([
+            'success' => true,
+            'cart_count' => $cart_count,
+            'wishlist_count' => $wishlist_count
+        ]);
+        exit;
+    } catch (PDOException $e) {
+        error_log("Update counters error: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'Có lỗi xảy ra khi cập nhật số lượng'
+        ]);
+        exit;
+    }
+}
+// Xử lý yêu cầu AJAX add_to_wishlist
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_to_wishlist') {
+    header('Content-Type: application/json');
+    
+    try {
+        if (!is_logged_in()) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Vui lòng đăng nhập để tiếp tục'
+            ]);
+            exit;
+        }
+
+        $user_id = $_SESSION['user_id'];
+        $dish_id = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
+
+        if (!$dish_id) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'ID món ăn không hợp lệ'
+            ]);
+            exit;
+        }
+
+        // Kiểm tra xem món đã có trong danh sách yêu thích chưa
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('SELECT id FROM favorites WHERE user_id = ? AND dish_id = ?');
+        $stmt->execute([$user_id, $dish_id]);
+        if ($stmt->fetch()) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Món ăn đã có trong danh sách yêu thích'
+            ]);
+            exit;
+        }
+
+        // Thêm món vào danh sách yêu thích
+        $stmt = $pdo->prepare('INSERT INTO favorites (user_id, dish_id) VALUES (?, ?)');
+        $stmt->execute([$user_id, $dish_id]);
+
+        // Đếm lại số lượng món yêu thích
+        $stmt = $pdo->prepare('SELECT COUNT(*) as count FROM favorites WHERE user_id = ?');
+        $stmt->execute([$user_id]);
+        $wishlist_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Đã thêm món vào danh sách yêu thích',
+            'wishlist_count' => $wishlist_count
+        ]);
+        exit;
+    } catch (PDOException $e) {
+        error_log("Add to wishlist error: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'Có lỗi xảy ra khi thêm món vào danh sách yêu thích'
+        ]);
+        exit;
+    }
+}
 
 try {
     $pdo = Database::getInstance();
@@ -27,34 +202,23 @@ try {
     $stmt->execute();
     $dishes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Debug: In số lượng món ăn và danh mục
-    echo "<!-- Debug: Số món ăn: " . count($dishes) . " -->";
-    echo "<!-- Debug: Raw categories: ";
-    foreach ($dishes as $dish) {
-        echo htmlspecialchars($dish['name'] . ' -> ' . $dish['category_name'] . ', ');
-    }
-    echo " -->";
-    echo "<!-- Debug: Processed categories: ";
-    foreach ($dishes as $dish) {
-        echo htmlspecialchars($dish['name'] . ' -> ' . $dish['category'] . ', ');
-    }
-    echo " -->";
     if (empty($dishes)) {
         $errors[] = "Không tìm thấy món ăn nào với status = 'Available'.";
     }
 
     // Xác định món bán chạy (top 3 dựa trên sales_count)
     $best_seller_count = min(3, count($dishes));
+    $categoryMap = [
+        'món chính' => 'mn-chnh',
+        'tráng miệng' => 'trng-ming',
+        'đồ uống' => '-ung',
+    ];
+
     foreach ($dishes as $index => &$dish) {
         $dish['is_best_seller'] = $index < $best_seller_count;
         $dish['is_top_best_seller'] = $index < $best_seller_count;
         // Chuyển tên danh mục thành định dạng không dấu, viết thường
         $category_name = $dish['category_name'] ?? 'unknown';
-        $categoryMap = [
-            'món chính' => 'mn-chnh',
-            'tráng miệng' => 'trng-ming',
-            'đồ uống' => '-ung',
-        ];
         $dish['category'] = $categoryMap[$category_name] ?? strtolower(str_replace(' ', '-', preg_replace('/[^a-zA-Z0-9\s]/u', '', $category_name)));
         // Xử lý hình ảnh
         $dish['image_url'] = !empty($dish['image']) ? $dish['image'] : 'https://via.placeholder.com/300x250?text=No+Image';
@@ -65,25 +229,15 @@ try {
     error_log("Query error: " . $e->getMessage());
 }
 
-// Hiển thị lỗi nếu có
-if (!empty($errors)) {
-    echo '<div style="color: red; padding: 20px; background: #ffe6e6; margin: 20px;">';
-    echo '<h3>Lỗi:</h3><ul>';
-    foreach ($errors as $error) {
-        echo '<li>' . htmlspecialchars($error, ENT_QUOTES, 'UTF-8') . '</li>';
-    }
-    echo '</ul></div>';
-}
-
 // Tạo JSON cho JavaScript
 $products_json = json_encode(array_map(function ($dish) {
     return [
         'id' => $dish['id'],
         'name' => $dish['name'],
         'price' => number_format($dish['price'], 0, ',', '.') . 'đ',
-        'description' => $dish['description'],
+        'description' => $dish['description'] ?? 'Không có mô tả',
         'image' => $dish['image_url'],
-        'salesCount' => $dish['sales_count'],
+        'salesCount' => $dish['sales_count'] ?? 0,
         'isBestSeller' => $dish['is_best_seller'],
         'isTopBestSeller' => $dish['is_top_best_seller'],
         'category' => $dish['category'],
@@ -95,7 +249,6 @@ $products_json = json_encode(array_map(function ($dish) {
 
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -104,11 +257,21 @@ $products_json = json_encode(array_map(function ($dish) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/header.css">
-
 </head>
-
 <body>
     <?php require_once 'templates/header.php'; ?>
+
+    <!-- Hiển thị lỗi nếu có -->
+    <?php if (!empty($errors)): ?>
+        <div class="error-container" style="color: red; padding: 20px; background: #ffe6e6; margin: 20px; border-radius: 8px;">
+            <h3>Lỗi:</h3>
+            <ul>
+                <?php foreach ($errors as $error): ?>
+                    <li><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
 
     <!-- Social Media Sidebar -->
     <div class="social-sidebar">
@@ -163,21 +326,21 @@ $products_json = json_encode(array_map(function ($dish) {
                 <div class="dish-grid">
                     <?php foreach ($dishes as $dish): ?>
                         <div class="dish-card fade-in <?php echo $dish['is_best_seller'] ? 'best-seller' : ''; ?>"
-                            data-dish-id="<?php echo htmlspecialchars($dish['id'], ENT_QUOTES, 'UTF-8'); ?>"
-                            data-category="<?php echo htmlspecialchars($dish['category'], ENT_QUOTES, 'UTF-8'); ?>"
-                            data-sales="<?php echo htmlspecialchars($dish['sales_count'], ENT_QUOTES, 'UTF-8'); ?>">
+                             data-dish-id="<?php echo htmlspecialchars($dish['id'], ENT_QUOTES, 'UTF-8'); ?>"
+                             data-category="<?php echo htmlspecialchars($dish['category'], ENT_QUOTES, 'UTF-8'); ?>"
+                             data-sales="<?php echo htmlspecialchars($dish['sales_count'] ?? 0, ENT_QUOTES, 'UTF-8'); ?>">
                             <?php if ($dish['is_best_seller']): ?>
                                 <div class="best-seller-badge">BEST SELLER</div>
                                 <div class="trending-effect"></div>
                             <?php endif; ?>
-                            <?php if ($dish['sales_count'] > 100): ?>
+                            <?php if (($dish['sales_count'] ?? 0) > 100): ?>
                                 <div class="popularity-indicator"><i class="fas fa-chart-line"></i> Hot</div>
                             <?php endif; ?>
                             <div class="dish-image">
                                 <img src="<?php echo htmlspecialchars($dish['image_url'], ENT_QUOTES, 'UTF-8'); ?>"
-                                    alt="<?php echo htmlspecialchars($dish['name'], ENT_QUOTES, 'UTF-8'); ?>">
+                                     alt="<?php echo htmlspecialchars($dish['name'], ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="sales-stats">
-                                    <i class="fas fa-shopping-cart"></i> <?php echo htmlspecialchars($dish['sales_count'], ENT_QUOTES, 'UTF-8'); ?> đã bán
+                                    <i class="fas fa-shopping-cart"></i> <?php echo htmlspecialchars($dish['sales_count'] ?? 0, ENT_QUOTES, 'UTF-8'); ?> đã bán
                                 </div>
                                 <div class="dish-actions">
                                     <button class="action-btn" onclick="addToCart(<?php echo htmlspecialchars($dish['id'], ENT_QUOTES, 'UTF-8'); ?>)">
@@ -196,7 +359,7 @@ $products_json = json_encode(array_map(function ($dish) {
                                     <?php echo htmlspecialchars($dish['name'], ENT_QUOTES, 'UTF-8'); ?>
                                     <span class="dish-price"><?php echo number_format($dish['price'], 0, ',', '.'); ?>đ</span>
                                 </h3>
-                                <p><?php echo htmlspecialchars($dish['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                <p><?php echo htmlspecialchars($dish['description'] ?? 'Không có mô tả', ENT_QUOTES, 'UTF-8'); ?></p>
                                 <div class="dish-actions-bottom">
                                     <button class="btn btn-buy-now" onclick="buyNow(<?php echo htmlspecialchars($dish['id'], ENT_QUOTES, 'UTF-8'); ?>)">
                                         <i class="fas fa-bolt"></i> Mua ngay
@@ -255,6 +418,7 @@ $products_json = json_encode(array_map(function ($dish) {
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
     <script src="<?php echo BASE_URL; ?>assets/js/main.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/header.js"></script>
 
     <?php require_once 'templates/footer.php'; ?>
 
@@ -279,11 +443,7 @@ $products_json = json_encode(array_map(function ($dish) {
             // Tìm liên kết Menu và Giới thiệu
             const menuLinks = document.querySelectorAll('a[href="#dishes"]');
             const aboutLinks = document.querySelectorAll('a[href="#contact"]');
-            const menuLink_dish = document.querySelectorAll('a[href="#dishes"]');
-            
-            console.log('Menu Links:', menuLinks);
-            console.log('About Links:', aboutLinks);
-            console.log('Menu Links:', menuLink_dish);
+
             // Gắn sự kiện cho Menu
             menuLinks.forEach(link => {
                 link.addEventListener('click', function(event) {
@@ -292,14 +452,7 @@ $products_json = json_encode(array_map(function ($dish) {
                     scrollToElement('dishes');
                 });
             });
-            // gắn sự kiện cho đặt món ngay
-            menuLink_dish.forEach(link => {
-                link.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    console.log('Nhấn vào đặt món ngay, cuộn đến phần món ăn');
-                    scrollToElement('dishes');
-                });
-            });
+
             // Gắn sự kiện cho Giới thiệu
             aboutLinks.forEach(link => {
                 link.addEventListener('click', function(event) {
@@ -311,5 +464,4 @@ $products_json = json_encode(array_map(function ($dish) {
         }
     </script>
 </body>
-
 </html>

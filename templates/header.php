@@ -8,8 +8,25 @@ require_once 'includes/functions.php';
 require_once 'includes/auth.php';
 
 // Đếm số lượng giỏ hàng và danh sách yêu thích
-$cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
-$wishlist_count = isset($_SESSION['wishlist']) ? count($_SESSION['wishlist']) : 0;
+$cart_count = 0;
+$wishlist_count = 0;
+
+if (is_logged_in()) {
+    $user_id = $_SESSION['user_id'];
+    try {
+        // Đếm số lượng món trong giỏ hàng
+        $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ? AND ci.deleted_at IS NULL");
+        $stmt->execute([$user_id]);
+        $cart_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+        // Đếm số lượng món trong danh sách yêu thích
+        $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM favorites WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+        $wishlist_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    } catch (Exception $e) {
+        error_log('Error fetching cart or wishlist count: ' . $e->getMessage());
+    }
+}
 
 // Lấy thông tin người dùng
 $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
@@ -63,20 +80,7 @@ $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
                             <?php if (is_premium_or_admin()): ?>
                                 <a href="/Restaurant_PHP/dish_manage.php"><i class="fas fa-utensils"></i> Quản lý món ăn</a>
                             <?php endif; ?>
-                            <?php $cart_count = 0;
-                            $cart_count = 0;
-                            if (is_logged_in()) {
-                                $user_id = $_SESSION['user_id'];
-                                try {
-                                    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ? AND ci.deleted_at IS NULL");
-                                    $stmt->execute([$user_id]);
-                                    $cart_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
-                                } catch (Exception $e) {
-                                    error_log('Error fetching cart count: ' . $e->getMessage());
-                                }
-                            }
-                            ?>
-                            <a href="<?php echo BASE_URL . 'cart.php'; ?>"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
+                            <a href="/Restaurant_PHP/cart.php"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
                             <a href="/Restaurant_PHP/checkout.php"><i class="fas fa-credit-card"></i> Thanh toán</a>
                             <a href="/Restaurant_PHP/orders.php"><i class="fas fa-list-alt"></i> Đơn hàng</a>
                             <hr>
