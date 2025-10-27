@@ -1,5 +1,4 @@
-let cart = [];
-let wishlist = [];
+
 let currentProductId = '';
 
 function debounce(func, wait) {
@@ -15,10 +14,29 @@ function debounce(func, wait) {
 }
 
 function updateCounters() {
-    const cartCount = document.getElementById('cart-count');
-    const wishlistCount = document.getElementById('wishlist-count');
-    if (cartCount) cartCount.textContent = cart.length;
-    if (wishlistCount) wishlistCount.textContent = wishlist.length;
+    const formData = new FormData();
+    formData.append('action', 'update_counters');
+
+    fetch(BASE_URL + 'index.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            const cartCount = document.getElementById('cart-count');
+            const wishlistCount = document.getElementById('wishlist-count');
+            if (cartCount && data.cart_count !== undefined) {
+                cartCount.textContent = data.cart_count;
+                cartCount.style.transform = 'scale(1.3)';
+                setTimeout(() => cartCount.style.transform = 'scale(1)', 200);
+            }
+            if (wishlistCount && data.wishlist_count !== undefined) {
+                wishlistCount.textContent = data.wishlist_count;
+                wishlistCount.style.transform = 'scale(1.3)';
+                setTimeout(() => wishlistCount.style.transform = 'scale(1)', 200);
+            }
+        })
+        .catch(error => console.error('Error updating counters:', error));
 }
 
 function sendAjaxRequest(action, dishId, callback) {
@@ -60,26 +78,38 @@ function addToCart(dishId) {
         showNotification('⚠️ Món ăn không tồn tại!', 'error');
         return;
     }
-    sendAjaxRequest('add_to_cart', dishId, (response) => {
-        if (response.success) {
-            showNotification(`✅ Đã thêm "${dish.name}" vào giỏ hàng!`, 'success');
-            const existingItem = cart.find(item => item.id === dishId);
-            if (existingItem) {
-                existingItem.quantity = (existingItem.quantity || 1) + 1;
+    const formData = new FormData();
+    formData.append('action', 'add_to_cart');
+    formData.append('dish_id', dishId);
+
+    fetch(BASE_URL + 'index.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(response => {
+            if (response.success) {
+                showNotification(`✅ Đã thêm "${dish.name}" vào giỏ hàng!`, 'success');
+                const cartCount = document.getElementById('cart-count');
+                if (cartCount && response.cart_count !== undefined) {
+                    cartCount.textContent = response.cart_count;
+                    cartCount.style.transform = 'scale(1.3)';
+                    setTimeout(() => cartCount.style.transform = 'scale(1)', 200);
+                }
+                updateSalesCount(dishId);
             } else {
-                cart.push({ ...dish, quantity: 1 });
+                showNotification(response.message || 'Vui lòng đăng nhập để tiếp tục', 'error');
+                if (response.message && response.message.includes('đăng nhập')) {
+                    setTimeout(() => {
+                        window.location.href = BASE_URL + 'login.php';
+                    }, 1000);
+                }
             }
-            updateCounters();
-            updateSalesCount(dishId);
-        } else {
-            showNotification(response.message || '⚠️ Lỗi khi thêm món vào giỏ hàng!', 'error');
-            if (response.message.includes('đăng nhập')) {
-                setTimeout(() => {
-                    window.location.href = BASE_URL + 'login.php';
-                }, 1000);
-            }
-        }
-    });
+        })
+        .catch(error => {
+            console.error('AJAX error:', error);
+            showNotification('⚠️ Lỗi kết nối server!', 'error');
+        });
 }
 
 function addToWishlist(dishId) {
@@ -88,14 +118,37 @@ function addToWishlist(dishId) {
         showNotification('⚠️ Món ăn không tồn tại!', 'error');
         return;
     }
-    sendAjaxRequest('add_to_wishlist', dishId, (response) => {
-        if (response.success) {
-            showNotification(`❤️ Đã thêm "${dish.name}" vào danh sách yêu thích!`, 'success');
-            updateCounters();
-        } else {
-            showNotification('Vui lòng đăng nhập để tiếp tục', 'error');
-        }
-    });
+    const formData = new FormData();
+    formData.append('action', 'add_to_wishlist');
+    formData.append('dish_id', dishId);
+
+    fetch(BASE_URL + 'index.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(response => {
+            if (response.success) {
+                showNotification(`❤️ Đã thêm "${dish.name}" vào danh sách yêu thích!`, 'success');
+                const wishlistCount = document.getElementById('wishlist-count');
+                if (wishlistCount && response.wishlist_count !== undefined) {
+                    wishlistCount.textContent = response.wishlist_count;
+                    wishlistCount.style.transform = 'scale(1.3)';
+                    setTimeout(() => wishlistCount.style.transform = 'scale(1)', 200);
+                }
+            } else {
+                showNotification(response.message || 'Vui lòng đăng nhập để tiếp tục', 'error');
+                if (response.message && response.message.includes('đăng nhập')) {
+                    setTimeout(() => {
+                        window.location.href = BASE_URL + 'login.php';
+                    }, 1000);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('AJAX error:', error);
+            showNotification('⚠️ Lỗi kết nối server!', 'error');
+        });
 }
 
 function showDetails(dishId) {
@@ -300,36 +353,41 @@ function addToCart(dishId) {
         showNotification('⚠️ Món ăn không tồn tại!', 'error');
         return;
     }
-    sendAjaxRequest('add_to_cart', dishId, (response) => {
-        console.log('Add to cart response:', response);
-        if (response.success) {
-            showNotification(`✅ Đã thêm "${dish.name}" vào giỏ hàng!`, 'success');
-            const existingItem = cart.find(item => item.id === dishId);
-            if (existingItem) {
-                existingItem.quantity = (existingItem.quantity || 1) + 1;
-            } else {
-                cart.push({ ...dish, quantity: 1 });
-            }
-            updateCounters();
-            updateSalesCount(dishId);
-        } else {
-            showNotification(response.message || '⚠️ Lỗi khi thêm món vào giỏ hàng!', 'error');
-            if (response.message.includes('đăng nhập')) {
-                setTimeout(() => {
-                    window.location.href = BASE_URL + 'login.php';
-                }, 1000);
-            }
-        }
-    });
-}
+    const formData = new FormData();
+    formData.append('action', 'add_to_cart');
+    formData.append('dish_id', dishId);
 
+    fetch(BASE_URL + 'index.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(response => {
+            if (response.success) {
+                showNotification(`✅ Đã thêm "${dish.name}" vào giỏ hàng!`, 'success');
+                const cartCount = document.getElementById('cart-count');
+                if (cartCount && response.cart_count !== undefined) {
+                    cartCount.textContent = response.cart_count;
+                    cartCount.style.transform = 'scale(1.3)';
+                    setTimeout(() => cartCount.style.transform = 'scale(1)', 200);
+                }
+                updateSalesCount(dishId);
+            } else {
+                showNotification(response.message || '⚠️ Lỗi khi thêm món vào giỏ hàng!', 'error');
+                if (response.message.includes('đăng nhập')) {
+                    setTimeout(() => {
+                        window.location.href = BASE_URL + 'login.php';
+                    }, 1000);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('AJAX error:', error);
+            showNotification('⚠️ Lỗi kết nối server!', 'error');
+        });
+}
 function toggleWishlist() {
-    if (wishlist.length === 0) {
-        showNotification('Danh sách yêu thích đang trống!', 'info');
-    } else {
-        let wishlistItems = wishlist.map(item => `${item.name} - ${item.price}`).join('\n');
-        alert(`Danh sách yêu thích của bạn:\n\n${wishlistItems}`);
-    }
+    window.location.href = BASE_URL + 'favorites.php';
 }
 
 function toggleUserMenu() {
@@ -392,7 +450,7 @@ function filterDishes(category, event = null) {
     // Lấy từ khóa tìm kiếm
     const searchInput = document.getElementById('searchInput');
     const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-    
+
 
     // Xóa nội dung hiện tại của dish-grid
     dishGrid.innerHTML = '';
@@ -405,8 +463,8 @@ function filterDishes(category, event = null) {
         console.log(`Filtered products for ${category}:`, filteredProducts);
     }
     if (query) {
-        filteredProducts = filteredProducts.filter(product => 
-            product.name.toLowerCase().includes(query) || 
+        filteredProducts = filteredProducts.filter(product =>
+            product.name.toLowerCase().includes(query) ||
             product.description.toLowerCase().includes(query)
         );
         console.log(`Filtered products for query "${query}":`, filteredProducts);
@@ -522,6 +580,7 @@ function updateSalesCount(dishId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    updateCounters();
     console.log('DOM loaded, products:', products);
     // Kiểm tra trạng thái đăng nhập
     const xhr = new XMLHttpRequest();
@@ -560,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('.filter-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             const category = this.getAttribute('onclick').match(/'([^']+)'/)[1];
             filterDishes(category, e);
             const ripple = document.createElement('span');
@@ -599,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
+        anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));
             if (target) {
@@ -630,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelectorAll('.btn, .action-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             const ripple = document.createElement('span');
             const rect = this.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);
@@ -659,7 +718,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-window.onclick = function(event) {
+window.onclick = function (event) {
     const modal = document.getElementById('productModal');
     const zoomModal = document.getElementById('zoomModal');
     if (event.target === modal) {
@@ -670,7 +729,7 @@ window.onclick = function(event) {
     }
 };
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         closeModal();
         closeZoomModal();
@@ -685,7 +744,7 @@ function searchDishes() {
     const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
     const activeFilter = document.querySelector('.filter-btn.active');
     const category = activeFilter ? activeFilter.getAttribute('onclick').match(/'([^']+)'/)[1] : 'all';
-    
+
     console.log('Search triggered with query:', query, 'and category:', category);
     filterDishes(category, null, query);
 }
@@ -863,14 +922,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     xhr.send('action=check_login');
-    
+
     // Khởi tạo hiển thị tất cả món ăn
     filterDishes('all');
 
     // Gắn sự kiện cho ô tìm kiếm
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
+        searchInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 console.log('Enter pressed, triggering search');
                 searchDishes();
@@ -902,7 +961,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('.filter-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             const category = this.getAttribute('onclick').match(/'([^']+)'/)[1];
             console.log('Filter button clicked, category:', category);
             filterDishes(category, e);
@@ -942,7 +1001,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
+        anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));
             if (target) {
@@ -973,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelectorAll('.btn, .action-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             const ripple = document.createElement('span');
             const rect = this.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);

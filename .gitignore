@@ -1,5 +1,7 @@
 # Bỏ qua file google config
 config/google.php
+callback.php
+includes/config.php
 
 # Bỏ qua các file nhạy cảm khác (nếu có)
 .env

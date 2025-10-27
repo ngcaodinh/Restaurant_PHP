@@ -59,7 +59,7 @@ function toggleCart() {
 
 // Toggle wishlist
 function toggleWishlist() {
-    showNotification('Danh sách yêu thích đang trống!', 'info');
+    window.location.href = '/Restaurant_PHP/favorites.php';
 }
 
 // Show notification function
