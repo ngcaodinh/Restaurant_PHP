@@ -19,7 +19,7 @@ $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
     <div class="header-container">
         <div class="top-nav">
             <div class="logo">
-                <a href="/Restaurant_PHP/index.php" class="logo">
+                <a href="<?php echo BASE_URL; ?>" class="logo">
                     <span class="logo-icon">🍜</span>
                     <span class="logo-text">CTUT Restaurant</span>
                 </a>
@@ -63,16 +63,25 @@ $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
                             <?php if (is_premium_or_admin()): ?>
                                 <a href="/Restaurant_PHP/dish_manage.php"><i class="fas fa-utensils"></i> Quản lý món ăn</a>
                             <?php endif; ?>
-                            <?php $cart_count = 0;
+                            <?php
                             $cart_count = 0;
+                            $wishlist_count = 0;
                             if (is_logged_in()) {
                                 $user_id = $_SESSION['user_id'];
                                 try {
-                                    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ? AND ci.deleted_at IS NULL");
+                                    $pdo = Database::getInstance();
+                                    // Get cart count
+                                    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ?");
                                     $stmt->execute([$user_id]);
                                     $cart_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+                                    // Get wishlist count (assuming there's a wishlist table)
+                                    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM wishlist WHERE user_id = ? AND deleted_at IS NULL");
+                                    $stmt->execute([$user_id]);
+                                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    $wishlist_count = $result ? $result['count'] : 0;
                                 } catch (Exception $e) {
-                                    error_log('Error fetching cart count: ' . $e->getMessage());
+                                    error_log('Error fetching cart/wishlist count: ' . $e->getMessage());
                                 }
                             }
                             ?>
@@ -91,3 +100,5 @@ $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
         </div>
     </div>
 </header>
+
+<script src="<?php echo BASE_URL; ?>assets/js/header.js"></script>

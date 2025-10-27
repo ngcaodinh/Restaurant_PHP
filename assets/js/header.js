@@ -1,4 +1,4 @@
-// Toggle hamburger menu
+ // Toggle hamburger menu
 document.addEventListener('DOMContentLoaded', () => {
     const hamburger = document.querySelector('.hamburger');
     const menuNav = document.querySelector('.menu-nav');
@@ -52,9 +52,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Search dishes function
+function searchDishes() {
+    const searchInput = document.getElementById('searchInput');
+    const query = searchInput ? searchInput.value.trim() : '';
+
+    if (query) {
+        // Redirect to home page with search query
+        window.location.href = `${BASE_URL || '/Restaurant_PHP/'}?search=${encodeURIComponent(query)}`;
+    } else {
+        showNotification('Vui lòng nhập từ khóa tìm kiếm!', 'warning');
+    }
+}
+
 // Toggle cart
 function toggleCart() {
-    showNotification('Giỏ hàng đang trống!', 'info');
+    window.location.href = `${BASE_URL || '/Restaurant_PHP/'}cart.php`;
 }
 
 // Toggle wishlist

@@ -1,0 +1,41 @@
+RewriteEngine On
+
+# Handle Angular and other front-end router, API routes
+RewriteCond %{REQUEST_URI} ^(?:.*/)?(api|assets|templates|includes|config|core)/?.*$
+RewriteRule ^(.*)$ - [L]
+
+# Allow direct access to existing files and directories
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^(.*)$ - [L]
+
+# Allow direct access to specific PHP files that should remain accessible
+RewriteCond %{REQUEST_URI} ^/(callback|google_auth|reset_password)\.php$
+RewriteRule ^(.*)$ - [L]
+
+# Redirect all other requests to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Optional: Force HTTPS (uncomment if needed)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Security: Prevent access to sensitive files
+<Files ~ "^\.">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Prevent access to PHP configuration files
+<Files "*.ini">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Prevent access to backup files
+<Files ~ "~$">
+    Order allow,deny
+    Deny from all
+</Files>

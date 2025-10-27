@@ -1,10 +1,194 @@
-# Bỏ qua file google config
+# ========================================
+# GITIGNORE CHO ỨNG DỤNG RESTAURANT PHP
+# ========================================
+
+# =====================================
+# CÁC FILE MÔI TRƯỜNG VÀ CẤU HÌNH NHẠY CẢM
+# =====================================
+.env
+.env.local
+.env.backup
+.env.production
+.env.staging
+.env.*.local
+
+# File cấu hình Google OAuth (nếu chứa thông tin nhạy cảm)
 config/google.php
 
-# Bỏ qua các file nhạy cảm khác (nếu có)
-.env
-*.log
+# =====================================
+# DEPENDENCIES VÀ PACKAGE MANAGERS
+# =====================================
+# Composer
+vendor/
+composer.phar
+composer.lock
 
-# Bỏ qua thư mục tạm
-/vendor/
+# NPM (nếu sử dụng)
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# =====================================
+# IDE VÀ EDITOR FILES
+# =====================================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# PhpStorm / IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# Eclipse
+.buildpath
+.project
+.settings/
+
+# NetBeans
+nbproject/
+
+# =====================================
+# HỆ ĐIỀU HÀNH
+# =====================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# =====================================
+# LOGS VÀ DEBUG
+# =====================================
+*.log
+logs/
+error.log
+access.log
+debug.log
+php_errors.log
+
+# =====================================
+# CACHE VÀ TEMPORARY FILES
+# =====================================
+# Cache directories
+cache/
+tmp/
+temp/
+storage/cache/
+storage/logs/
+
+# Session files
+sessions/
+storage/sessions/
+
+# Compiled files
+*.compiled
+
+# =====================================
+# ỨNG DỤNG RESTAURANT - FILES CỤ THỂ
+# =====================================
+# Upload directories với nội dung người dùng
+uploads/
+storage/uploads/
+public/uploads/
+assets/uploads/
+
+# Database backups
+*.sql
+*.dump
+database/backups/
+backups/
+
+# Generated files
+storage/compiled/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+
+# =====================================
+# SECURITY VÀ BACKUP FILES
+# =====================================
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+
+# Security scan results
+security-checker.json
+
+# =====================================
+# TESTING VÀ DEVELOPMENT
+# =====================================
+# PHPUnit
+.phpunit.result.cache
+phpunit.xml
+
+# Coverage reports
+coverage/
+clover.xml
+
+# Test databases
+test.db
+testing.sqlite
+
+# =====================================
+# BUILD VÀ DEPLOYMENT
+# =====================================
+# Build artifacts
+build/
+dist/
+public/build/
+
+# Deployment scripts với thông tin nhạy cảm
+deploy.php
+deploy.sh
+
+# =====================================
+# MISC
+# =====================================
+# Lock files
+*.lock
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Documentation builds
+docs/_build/

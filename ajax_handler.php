@@ -1,17 +1,12 @@
 <?php
-require_once 'includes/config.php';
-require_once 'includes/db_connect.php';
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
+require_once __DIR__ . '/core/bootstrap.php';
 
 header('Content-Type: application/json');
 
-$action = $_POST['action'] ?? '';
-$dish_id = $_POST['dish_id'] ?? 0;
+$action = $_POST['action'] ?? $_GET['action'] ?? null;
+$dish_id = $_POST['dish_id'] ?? $_GET['dish_id'] ?? null;
 
-error_log('AJAX request: action=' . $action . ', dish_id=' . $dish_id);
-
-$response = ['success' => false, 'message' => 'Hành động không hợp lệ.'];
+$response = ['success' => false, 'message' => 'Invalid action.'];
 
 switch ($action) {
     case 'add_to_cart':
@@ -23,21 +18,24 @@ switch ($action) {
     case 'add_to_wishlist':
         $response = add_to_wishlist($dish_id);
         break;
-    case 'get_cart_count':
-        if (!is_logged_in()) {
-            $response = ['success' => false, 'cart_count' => 0];
+    case 'check_login_status':
+        if (is_logged_in()) {
+            $response = [
+                'success' => true,
+                'logged_in' => true,
+                'user' => [
+                    'name' => get_user_name(),
+                    'role' => get_user_role()
+                ]
+            ];
         } else {
-            $user_id = $_SESSION['user_id'];
-            $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ? ");
-            $stmt->execute([$user_id]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $response = ['success' => true, 'cart_count' => $result['count']];
+            $response = ['success' => true, 'logged_in' => false];
         }
         break;
-    default:
-        $response = ['success' => false, 'message' => 'Hành động không được hỗ trợ.'];
+    case 'search':
+        // This case can be implemented if you have a search function
+        break;
 }
 
 echo json_encode($response);
-exit;
 ?>
