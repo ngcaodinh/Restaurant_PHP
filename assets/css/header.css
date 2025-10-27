@@ -6,23 +6,42 @@ header {
   position: fixed;
   width: 100%;
   top: 0;
-  z-index: 999;
+  z-index: 1001;
+  /* Higher z-index to be above register page overlay */
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
   transition: padding 0.3s ease;
 }
 
 .header-container {
-  max-width: 95%;
+  max-width: 1200px;
   margin: 0 auto;
   padding-left: 20px;
   padding-right: 20px;
+}
+
+/* Đảm bảo container-fluid trong header có cùng padding */
+header .container-fluid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+/* Đảm bảo Font Awesome icons hiển thị đúng trên tất cả trang */
+.nav-icon i,
+.user-icon-fix {
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .top-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  width: 100%;
 }
 
 .logo {
@@ -43,10 +62,12 @@ header {
 }
 
 @keyframes floatNoodle {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-5px);
   }
@@ -60,7 +81,8 @@ header {
 
 .search-bar {
   flex: 1;
-  max-width: 400px; /* Giới hạn tối đa */
+  max-width: 400px;
+  /* Giới hạn tối đa */
   margin-left: 10px;
   position: relative;
 }
@@ -75,6 +97,7 @@ header {
   transition: all 0.3s ease;
   background-color: white;
 }
+
 /* Hiệu ứng khi focus */
 .search-bar input:focus {
   border-color: #ff6b6b;
@@ -94,7 +117,7 @@ header {
 }
 
 /* Icon xoay khi focus */
-.search-bar input:focus + .search-icon {
+.search-bar input:focus+.search-icon {
   animation: spinSearch 0.6s ease;
 }
 
@@ -102,6 +125,7 @@ header {
   0% {
     transform: translateY(-50%) rotate(0deg);
   }
+
   100% {
     transform: translateY(-50%) rotate(360deg);
   }
@@ -114,7 +138,8 @@ header {
   transform: translateY(-50%);
   color: #aaa;
   font-size: 14px;
-  pointer-events: none; /* để người dùng bấm không bị vướng icon */
+  pointer-events: none;
+  /* để người dùng bấm không bị vướng icon */
 }
 
 .menu-nav ul {
@@ -133,32 +158,144 @@ header {
   color: #333;
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.3s ease;
+  padding: 8px 16px;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateY(0);
+}
+
+.menu-nav ul li a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.menu-nav ul li a:hover::before {
+  left: 100%;
 }
 
 .menu-nav ul li a:hover {
-  color: #ff6b6b;
+  color: white;
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(255, 107, 107, 0.4);
 }
 
 .menu-nav ul li a::after {
   content: "";
   position: absolute;
   width: 0;
-  height: 2px;
-  bottom: -5px;
-  left: 0;
+  height: 3px;
+  bottom: -2px;
+  left: 50%;
   background: linear-gradient(45deg, #ff6b6b, #ffa500);
-  transition: width 0.3s ease;
+  border-radius: 2px;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateX(-50%);
 }
 
 .menu-nav ul li a:hover::after {
   width: 100%;
 }
 
+/* Active state for current page */
+.menu-nav ul li a.active {
+  color: #ff6b6b;
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 165, 0, 0.1));
+}
+
+.menu-nav ul li a.active::after {
+  width: 100%;
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+}
+
+/* Focus state for accessibility */
+.menu-nav ul li a:focus {
+  outline: 2px solid rgba(255, 107, 107, 0.5);
+  outline-offset: 2px;
+}
+
+/* Styling for Bootstrap Nav Links */
+.navbar-nav .nav-link {
+  position: relative;
+  padding: 0.5rem 1rem;
+  transition: color 0.3s ease;
+  border-radius: 8px;
+  font-weight: 500;
+  color: #333;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ff6b6b;
+  transform: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* Underline effect */
+.navbar-nav .nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 3px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 2px;
+}
+
+.navbar-nav .nav-link:hover::after {
+  width: 100%;
+}
+
+.navbar-nav .nav-link.active {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+
+.navbar-collapse {
+  flex-grow: 1;
+}
+
+.navbar-collapse {
+  flex-grow: 1;
+}
+
 .nav-icons {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.25rem;
+}
+
+.nav-icons .icon-wrapper {
+  margin: 0;
+}
+
+.nav-icon i {
+  color: #333;
+  /* Explicitly set icon color */
+}
+
+.user-icon-fix {
+  display: inline-block !important;
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #333 !important;
+  /* Explicitly set color */
 }
 
 .icon-wrapper {
@@ -193,6 +330,7 @@ header {
   font-size: 0.8rem;
   font-weight: bold;
 }
+
 .hamburger {
   cursor: pointer;
   font-size: 1.5rem;
@@ -272,7 +410,14 @@ header {
   .menu-nav ul li a {
     font-size: 1rem;
     display: block;
-    padding: 10px 0;
+    padding: 12px 16px;
+    margin: 4px 0;
+    border-radius: 8px;
+  }
+
+  .menu-nav ul li a:hover {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.12), rgba(255, 165, 0, 0.12));
+    transform: translateX(8px);
   }
 
   .dropdown-content {
@@ -287,8 +432,8 @@ header {
     min-width: 180px;
   }
 
-  .nav-icons {
-    gap: 0.5rem;
+  .nav-icons .icon-wrapper {
+    margin: 0 0.3rem;
   }
 
   .search-bar {

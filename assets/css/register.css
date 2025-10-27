@@ -40,90 +40,7 @@ body {
     backdrop-filter: blur(2px);
 }
 
-.header {
-    background: #f8f8f8;
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
-}
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.logo span:first-child {
-    margin-right: 10px;
-}
-
-.nav-menu a {
-    margin: 0 15px;
-    text-decoration: none;
-    color: #333;
-}
-
-.header-icons {
-    display: flex;
-    align-items: center;
-}
-
-.icon-item {
-    margin: 0 10px;
-    position: relative;
-}
-
-.icon-item .count {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: red;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 12px;
-}
-
-.user-menu {
-    position: relative;
-}
-
-.user-menu a, .user-menu .user-name {
-    margin: 0 10px;
-    text-decoration: none;
-    color: #333;
-}
-
-.dropdown {
-    display: none;
-    position: absolute;
-    background: white;
-    border: 1px solid #ddd;
-    padding: 10px;
-    top: 100%;
-    right: 0;
-}
-
-.user-menu:hover .dropdown {
-    display: block;
-}
-
-.dropdown a {
-    display: block;
-    margin: 5px 0;
-}
 
 .register-container {
     flex: 1;
@@ -133,6 +50,8 @@ body {
     padding: 100px 20px;
     position: relative;
     z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .register-box {
@@ -161,13 +80,27 @@ body {
 }
 
 @keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(50px) scale(0.95); filter: blur(10px); }
-    to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.95);
+        filter: blur(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
 }
 
 .register-header {
@@ -190,8 +123,15 @@ body {
 }
 
 @keyframes gradientMove {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
 }
 
 .register-subtitle {
@@ -279,7 +219,7 @@ body {
     margin-top: 10px;
     overflow: hidden;
     position: relative;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .password-strength-bar {
@@ -296,7 +236,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), transparent);
 }
 
 .password-strength-weak {
@@ -323,9 +263,17 @@ body {
     transition: color 0.3s ease;
 }
 
-.password-strength-text.weak { color: #f44336; }
-.password-strength-text.medium { color: #ffa500; }
-.password-strength-text.strong { color: #4caf50; }
+.password-strength-text.weak {
+    color: #f44336;
+}
+
+.password-strength-text.medium {
+    color: #ffa500;
+}
+
+.password-strength-text.strong {
+    color: #4caf50;
+}
 
 .password-requirements {
     color: rgba(255, 255, 255, 0.8);
@@ -454,9 +402,17 @@ body {
 }
 
 @keyframes pulse {
-    0% { transform: translateY(-1px) scale(1.01); }
-    50% { transform: translateY(-2px) scale(1.03); }
-    100% { transform: translateY(-1px) scale(1.01); }
+    0% {
+        transform: translateY(-1px) scale(1.01);
+    }
+
+    50% {
+        transform: translateY(-2px) scale(1.03);
+    }
+
+    100% {
+        transform: translateY(-1px) scale(1.01);
+    }
 }
 
 .register-button:disabled {
@@ -483,7 +439,9 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .divider {
@@ -616,28 +574,25 @@ body {
 }
 
 @media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        text-align: center;
+    .register-container {
+        padding: 80px 15px;
     }
-    .nav-menu a {
-        margin: 10px 15px;
-    }
-    .header-icons {
-        margin-top: 10px;
-    }
+
     .register-box {
         padding: 30px 25px;
         margin: 0 15px;
     }
+
     .register-title {
         font-size: 28px;
     }
+
     .form-input,
     .register-button,
     .google-register-btn {
         padding: 14px 16px;
     }
+
     .password-requirements {
         grid-template-columns: 1fr;
     }

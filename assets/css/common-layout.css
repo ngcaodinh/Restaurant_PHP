@@ -1,0 +1,49 @@
+/* Common Layout CSS - Đồng nhất layout cho tất cả các trang */
+
+/* Container chung cho tất cả các trang */
+.page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Container cho các trang có nội dung chính (index) */
+.main-content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Container cho các trang form (login, register) */
+.form-page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 100px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 200px);
+}
+
+/* Responsive cho container chung */
+@media (max-width: 768px) {
+    .page-container,
+    .main-content-container {
+        padding: 0 15px;
+    }
+    
+    .form-page-container {
+        padding: 80px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-container,
+    .main-content-container {
+        padding: 0 10px;
+    }
+    
+    .form-page-container {
+        padding: 60px 10px;
+    }
+}

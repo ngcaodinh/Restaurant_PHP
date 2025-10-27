@@ -8,3 +8,6 @@ config/google.php
 # Bỏ qua thư mục tạm
 /vendor/
 node_modules/
+
+# miss
+.augment/rules/
