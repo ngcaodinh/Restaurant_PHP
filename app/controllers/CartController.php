@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use Core\BaseController;
@@ -20,7 +21,7 @@ class CartController extends BaseController
     public function index(): void
     {
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
-        
+
         $userId = $_SESSION['user_id'];
         $cartItems = $this->cartModel->getCartItems($userId);
         $cartTotal = $this->cartModel->getCartTotal($userId);
@@ -42,14 +43,14 @@ class CartController extends BaseController
         }
 
         $dishId = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
-        $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+        $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1, 'max_range' => 99]]);
 
-        if (!$dishId) {
-            $this->jsonResponse(['success' => false, 'message' => 'Món ăn không hợp lệ']);
+        if (!$dishId || !$quantity) {
+            $this->jsonResponse(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
             return;
         }
 
-        // Check if dish exists
+        // Check if dish exists and is available
         $dish = $this->dishModel->getDishById($dishId);
         if (!$dish) {
             $this->jsonResponse(['success' => false, 'message' => 'Món ăn không tồn tại']);
@@ -58,11 +59,22 @@ class CartController extends BaseController
 
         $userId = $_SESSION['user_id'];
         $cartId = $this->cartModel->getOrCreateCart($userId);
-        
+
         if ($this->cartModel->addItem($cartId, $dishId, $quantity)) {
-            // Update session cart
+            // Update session cart and get updated totals
             $_SESSION['cart'] = $this->cartModel->getCartItems($userId);
-            $this->jsonResponse(['success' => true, 'message' => 'Đã thêm món vào giỏ hàng']);
+            $cartTotal = $this->cartModel->getCartTotal($userId);
+            $cartCount = $this->cartModel->getCartItemCount($userId);
+
+            $this->jsonResponse([
+                'success' => true,
+                'message' => 'Đã thêm món vào giỏ hàng',
+                'cart' => [
+                    'total' => $cartTotal,
+                    'count' => $cartCount,
+                    'items' => $_SESSION['cart']
+                ]
+            ]);
         } else {
             $this->jsonResponse(['success' => false, 'message' => 'Lỗi khi thêm món vào giỏ hàng']);
         }
@@ -89,7 +101,7 @@ class CartController extends BaseController
 
         $userId = $_SESSION['user_id'];
         $cartId = $this->cartModel->getOrCreateCart($userId);
-        
+
         if ($this->cartModel->removeItem($cartId, $dishId)) {
             // Update session cart
             $_SESSION['cart'] = $this->cartModel->getCartItems($userId);
@@ -112,20 +124,38 @@ class CartController extends BaseController
         }
 
         $dishId = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
-        $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+        $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 99]]);
 
         if (!$dishId || $quantity === false) {
             $this->jsonResponse(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
             return;
         }
 
+        // Check if dish exists
+        $dish = $this->dishModel->getDishById($dishId);
+        if (!$dish) {
+            $this->jsonResponse(['success' => false, 'message' => 'Món ăn không tồn tại']);
+            return;
+        }
+
         $userId = $_SESSION['user_id'];
         $cartId = $this->cartModel->getOrCreateCart($userId);
-        
+
         if ($this->cartModel->updateItemQuantity($cartId, $dishId, $quantity)) {
-            // Update session cart
+            // Update session cart and get updated totals
             $_SESSION['cart'] = $this->cartModel->getCartItems($userId);
-            $this->jsonResponse(['success' => true, 'message' => 'Đã cập nhật số lượng']);
+            $cartTotal = $this->cartModel->getCartTotal($userId);
+            $cartCount = $this->cartModel->getCartItemCount($userId);
+
+            $this->jsonResponse([
+                'success' => true,
+                'message' => $quantity > 0 ? 'Đã cập nhật số lượng' : 'Đã xóa món khỏi giỏ hàng',
+                'cart' => [
+                    'total' => $cartTotal,
+                    'count' => $cartCount,
+                    'items' => $_SESSION['cart']
+                ]
+            ]);
         } else {
             $this->jsonResponse(['success' => false, 'message' => 'Lỗi khi cập nhật số lượng']);
         }
@@ -144,7 +174,7 @@ class CartController extends BaseController
         }
 
         $userId = $_SESSION['user_id'];
-        
+
         if ($this->cartModel->clearCart($userId)) {
             // Update session cart
             $_SESSION['cart'] = [];
@@ -181,11 +211,11 @@ class CartController extends BaseController
         }
 
         $userId = $_SESSION['user_id'];
-        
+
         if ($this->cartModel->replaceCartWithSingleItem($userId, $dishId)) {
             // Update session cart
             $_SESSION['cart'] = $this->cartModel->getCartItems($userId);
-            $this->jsonResponse(['success' => true, 'message' => 'Đã thêm món để thanh toán', 'redirect' => '/checkout']);
+            $this->jsonResponse(['success' => true, 'message' => 'Đã thêm món để thanh toán', 'redirect' => BASE_URL . 'checkout']);
         } else {
             $this->jsonResponse(['success' => false, 'message' => 'Lỗi khi thêm món vào giỏ hàng']);
         }
@@ -206,14 +236,14 @@ class CartController extends BaseController
     private function checkAuth(array $allowedRoles): void
     {
         if (!$this->isLoggedIn()) {
-            header('Location: /login');
+            header('Location: ' . BASE_URL . 'login');
             exit();
         }
 
         $userRole = $_SESSION['user_role'] ?? null;
         if (!in_array($userRole, $allowedRoles)) {
             $_SESSION['error_message'] = 'Bạn không có quyền truy cập.';
-            header('Location: /');
+            header('Location: ' . BASE_URL);
             exit();
         }
     }

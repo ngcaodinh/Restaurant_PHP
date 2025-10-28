@@ -61,7 +61,7 @@
                         <input type="checkbox" id="remember" name="remember" <?php echo isset($_POST['remember']) ? 'checked' : ''; ?>>
                         <label for="remember">Ghi nhớ tôi</label>
                     </div>
-                    <a href="/reset-password" class="forgot-password">Quên mật khẩu?</a>
+                    <a href="<?php echo BASE_URL; ?>reset-password" class="forgot-password">Quên mật khẩu?</a>
                 </div>
 
                 <button type="submit" class="login-button" id="loginBtn">
@@ -78,7 +78,7 @@
             </button>
 
             <div class="register-link">
-                Chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
+                Chưa có tài khoản? <a href="<?php echo BASE_URL; ?>register">Đăng ký ngay</a>
             </div>
         </div>
     </div>
