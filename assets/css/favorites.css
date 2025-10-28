@@ -227,3 +227,101 @@
     padding-bottom: 10px;
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
+
+/* === Notification Styles for Favorites Page === */
+.notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 10000;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    max-width: 380px;
+    color: white;
+    font-weight: 500;
+    border-left: 5px solid transparent;
+    animation: slideInRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.notification.slide-out {
+    animation: slideOutRight 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+
+.notification.success {
+    background: linear-gradient(135deg, #2d3748, #1a202c);
+    border-left-color: #48bb78;
+    /* Green */
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #2d3748, #1a202c);
+    border-left-color: #f56565;
+    /* Red */
+}
+
+.notification.info {
+    background: linear-gradient(135deg, #2d3748, #1a202c);
+    border-left-color: #4299e1;
+    /* Blue */
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.notification-content span::before {
+    content: '✅ ';
+    margin-right: 8px;
+}
+
+.notification.error .notification-content span::before {
+    content: '❌ ';
+}
+
+.notification.info .notification-content span::before {
+    content: 'ℹ️ ';
+}
+
+.notification-content button {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.notification-content button:hover {
+    color: white;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(calc(100% + 20px));
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(calc(100% + 20px));
+        opacity: 0;
+    }
+}

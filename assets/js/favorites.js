@@ -100,27 +100,55 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function showNotification(message, type = 'info') {
+    // Remove any existing notification to prevent overlap
     const existing = document.querySelector('.notification');
-    if (existing) existing.remove();
+    if (existing) {
+        existing.remove();
+    }
 
+    // Create the notification element
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
+
+    // Set the inner HTML
     notification.innerHTML = `
-            <div class="notification-content">
-                <span>${message}</span>
-                <button onclick="this.parentElement.parentElement.remove()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
+        <div class="notification-content">
+            <span>${message}</span>
+            <button>&times;</button>
+        </div>
+    `;
+
+    // Append to the body
     document.body.appendChild(notification);
 
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.style.animation = 'slideInRight 0.3s ease reverse';
-            setTimeout(() => notification.remove(), 300);
-        }
-    }, 4000);
+    // Auto-dismissal logic
+    const lifeTime = 5000; // 5 seconds
+    const animationTime = 500; // 0.5 seconds
+
+    // 1. Start the timer to slide out
+    const slideOutTimer = setTimeout(() => {
+        notification.classList.add('slide-out');
+
+        // 2. Remove the element after the slide-out animation completes
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, animationTime);
+    }, lifeTime - animationTime);
+
+    // Manual close button
+    notification.querySelector('button').addEventListener('click', () => {
+        clearTimeout(slideOutTimer); // Stop the auto-dismiss timer
+        notification.classList.add('slide-out');
+
+        // Remove after animation
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, animationTime);
+    });
 }
 
 
