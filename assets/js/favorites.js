@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('dish_id', dishId);
         formData.append('quantity', quantity);
 
-        fetch('cart.php', {
+        fetch('ajax_handler.php', {
             method: 'POST',
             body: formData
         })

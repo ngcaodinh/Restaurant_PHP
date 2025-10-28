@@ -1,5 +1,3 @@
-let products = {};
-
 let cart = [];
 let wishlist = [];
 let currentProductId = '';
@@ -54,34 +52,6 @@ function sendAjaxRequest(action, dishId, callback) {
         showNotification('⚠️ Lỗi kết nối server!', 'error');
     };
     xhr.send(`action=${action}&dish_id=${dishId}`);
-}
-
-function addToCart(dishId) {
-    const dish = products[dishId];
-    if (!dish) {
-        showNotification('⚠️ Món ăn không tồn tại!', 'error');
-        return;
-    }
-    sendAjaxRequest('add_to_cart', dishId, (response) => {
-        if (response.success) {
-            showNotification(`✅ Đã thêm "${dish.name}" vào giỏ hàng!`, 'success');
-            const existingItem = cart.find(item => item.id === dishId);
-            if (existingItem) {
-                existingItem.quantity = (existingItem.quantity || 1) + 1;
-            } else {
-                cart.push({ ...dish, quantity: 1 });
-            }
-            updateCounters();
-            updateSalesCount(dishId);
-        } else {
-            showNotification(response.message || '⚠️ Lỗi khi thêm món vào giỏ hàng!', 'error');
-            if (response.message.includes('đăng nhập')) {
-                setTimeout(() => {
-                    window.location.href = BASE_URL + 'login.php';
-                }, 1000);
-            }
-        }
-    });
 }
 
 function addToWishlist(dishId) {
@@ -303,7 +273,6 @@ function addToCart(dishId) {
         return;
     }
     sendAjaxRequest('add_to_cart', dishId, (response) => {
-        console.log('Add to cart response:', response);
         if (response.success) {
             showNotification(`✅ Đã thêm "${dish.name}" vào giỏ hàng!`, 'success');
             const existingItem = cart.find(item => item.id === dishId);
@@ -367,138 +336,7 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-function filterDishes(category, event = null) {
-    console.log('Filtering category:', category);
-    console.log('Products object:', products);
-    const dishGrid = document.querySelector('.dish-grid');
-    if (!dishGrid) {
-        console.error('Dish grid element not found!');
-        return;
-    }
 
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    if (!filterButtons.length) {
-        console.error('Filter buttons not found!');
-        return;
-    }
-
-    // Cập nhật trạng thái nút lọc
-    filterButtons.forEach(btn => btn.classList.remove('active'));
-    if (event && event.target) {
-        event.target.classList.add('active');
-    } else {
-        const allButton = document.querySelector('.filter-btn[onclick="filterDishes(\'all\')"]');
-        if (allButton) allButton.classList.add('active');
-    }
-
-    // Lấy từ khóa tìm kiếm
-    const searchInput = document.getElementById('searchInput');
-    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-
-
-    // Xóa nội dung hiện tại của dish-grid
-    dishGrid.innerHTML = '';
-
-    // Lọc và sắp xếp món ăn
-    let filteredProducts = Object.values(products);
-    console.log('All products:', filteredProducts);
-    if (category !== 'all') {
-        filteredProducts = filteredProducts.filter(product => product.category === category);
-        console.log(`Filtered products for ${category}:`, filteredProducts);
-    }
-    if (query) {
-        filteredProducts = filteredProducts.filter(product =>
-            product.name.toLowerCase().includes(query) ||
-            product.description.toLowerCase().includes(query)
-        );
-        console.log(`Filtered products for query "${query}":`, filteredProducts);
-    }
-
-    // Hiển thị thông báo nếu không có món ăn
-    if (filteredProducts.length === 0) {
-        dishGrid.innerHTML = '<p style="text-align: center; color: #666;">Không tìm thấy món ăn nào.</p>';
-        return;
-    }
-
-    // Sắp xếp theo salesCount
-    filteredProducts.sort((a, b) => b.salesCount - a.salesCount);
-
-    // Tạo thẻ dish-card
-    filteredProducts.forEach((product) => {
-        const isBestSeller = product.isBestSeller;
-        const dishCard = document.createElement('div');
-        dishCard.className = `dish-card fade-in ${isBestSeller ? 'best-seller' : ''}`;
-        dishCard.setAttribute('data-dish-id', product.id);
-        dishCard.setAttribute('data-category', product.category);
-        dishCard.setAttribute('data-sales', product.salesCount);
-
-        dishCard.innerHTML = `
-            ${isBestSeller ? `
-                <div class="best-seller-badge">BEST SELLER</div>
-                <div class="trending-effect"></div>
-            ` : ''}
-            ${product.salesCount > 100 ? `
-                <div class="popularity-indicator"><i class="fas fa-chart-line"></i> Hot</div>
-            ` : ''}
-            <div class="dish-image">
-                <img src="${product.image}" alt="${product.name}">
-                <div class="sales-stats">
-                    <i class="fas fa-shopping-cart"></i> ${product.salesCount} đã bán
-                </div>
-                <div class="dish-actions">
-                    <button class="action-btn" onclick="addToCart(${product.id})">
-                        <i class="fas fa-shopping-cart"></i>
-                    </button>
-                    <button class="action-btn wishlist" onclick="addToWishlist(${product.id})">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                    <button class="action-btn" onclick="showDetails(${product.id})">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="dish-info">
-                <h3>
-                    ${product.name}
-                    <span class="dish-price">${product.price}</span>
-                </h3>
-                <p>${product.description}</p>
-                <div class="dish-actions-bottom">
-                    <button class="btn btn-buy-now" onclick="buyNow(${product.id})">
-                        <i class="fas fa-bolt"></i> Mua ngay
-                    </button>
-                </div>
-            </div>
-        `;
-
-        dishGrid.appendChild(dishCard);
-    });
-
-    // Điều chỉnh layout của dish-grid
-    if (filteredProducts.length === 1) {
-        dishGrid.style.display = 'flex';
-        dishGrid.style.justifyContent = 'center';
-    } else {
-        dishGrid.style.display = 'grid';
-    }
-
-    // Áp dụng hiệu ứng fade-in
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-    document.querySelectorAll('.dish-card').forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
-        observer.observe(card);
-    });
-}
 
 function updateSalesCount(dishId) {
     if (products[dishId]) {
