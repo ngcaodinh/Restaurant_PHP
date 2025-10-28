@@ -2,261 +2,75 @@
 
 namespace App\Controllers;
 
-use Core\BaseController;
-use App\Models\Cart;
-use App\Models\Dish;
-use Database;
+use App\Models\CartModel;
 
-class CartController extends BaseController
+class CartController
 {
-    private Cart $cartModel;
-    private Dish $dishModel;
+    private $cartModel;
 
-    public function __construct()
+    public function __construct($db)
     {
-        $this->cartModel = new Cart(Database::getInstance());
-        $this->dishModel = new Dish(Database::getInstance());
+        $this->cartModel = new CartModel($db);
     }
 
-    public function index(): void
+    public function index()
     {
-        $this->checkAuth(['Admin', 'User', 'PremiumUser']);
-
-        $userId = $_SESSION['user_id'];
-        $cartItems = $this->cartModel->getCartItems($userId);
-        $cartTotal = $this->cartModel->getCartTotal($userId);
-        $cartCount = $this->cartModel->getCartItemCount($userId);
-
-        $this->view('cart/index', compact('cartItems', 'cartTotal', 'cartCount'));
-    }
-
-    public function add(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->jsonResponse(['success' => false, 'message' => 'Invalid request method']);
-            return;
-        }
-
-        if (!$this->isLoggedIn()) {
-            $this->jsonResponse(['success' => false, 'message' => 'Vui lòng đăng nhập để tiếp tục']);
-            return;
-        }
-
-        $dishId = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
-        $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1, 'max_range' => 99]]);
-
-        if (!$dishId || !$quantity) {
-            $this->jsonResponse(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
-            return;
-        }
-
-        // Check if dish exists and is available
-        $dish = $this->dishModel->getDishById($dishId);
-        if (!$dish) {
-            $this->jsonResponse(['success' => false, 'message' => 'Món ăn không tồn tại']);
-            return;
-        }
-
-        $userId = $_SESSION['user_id'];
-        $cartId = $this->cartModel->getOrCreateCart($userId);
-
-        if ($this->cartModel->addItem($cartId, $dishId, $quantity)) {
-            // Update session cart and get updated totals
-            $_SESSION['cart'] = $this->cartModel->getCartItems($userId);
-            $cartTotal = $this->cartModel->getCartTotal($userId);
-            $cartCount = $this->cartModel->getCartItemCount($userId);
-
-            $this->jsonResponse([
-                'success' => true,
-                'message' => 'Đã thêm món vào giỏ hàng',
-                'cart' => [
-                    'total' => $cartTotal,
-                    'count' => $cartCount,
-                    'items' => $_SESSION['cart']
-                ]
-            ]);
-        } else {
-            $this->jsonResponse(['success' => false, 'message' => 'Lỗi khi thêm món vào giỏ hàng']);
-        }
-    }
-
-    public function remove(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->jsonResponse(['success' => false, 'message' => 'Invalid request method']);
-            return;
-        }
-
-        if (!$this->isLoggedIn()) {
-            $this->jsonResponse(['success' => false, 'message' => 'Vui lòng đăng nhập để tiếp tục']);
-            return;
-        }
-
-        $dishId = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
-
-        if (!$dishId) {
-            $this->jsonResponse(['success' => false, 'message' => 'Món ăn không hợp lệ']);
-            return;
-        }
-
-        $userId = $_SESSION['user_id'];
-        $cartId = $this->cartModel->getOrCreateCart($userId);
-
-        if ($this->cartModel->removeItem($cartId, $dishId)) {
-            // Update session cart
-            $_SESSION['cart'] = $this->cartModel->getCartItems($userId);
-            $this->jsonResponse(['success' => true, 'message' => 'Đã xóa món khỏi giỏ hàng']);
-        } else {
-            $this->jsonResponse(['success' => false, 'message' => 'Lỗi khi xóa món khỏi giỏ hàng']);
-        }
-    }
-
-    public function updateQuantity(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->jsonResponse(['success' => false, 'message' => 'Invalid request method']);
-            return;
-        }
-
-        if (!$this->isLoggedIn()) {
-            $this->jsonResponse(['success' => false, 'message' => 'Vui lòng đăng nhập để tiếp tục']);
-            return;
-        }
-
-        $dishId = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
-        $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 99]]);
-
-        if (!$dishId || $quantity === false) {
-            $this->jsonResponse(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
-            return;
-        }
-
-        // Check if dish exists
-        $dish = $this->dishModel->getDishById($dishId);
-        if (!$dish) {
-            $this->jsonResponse(['success' => false, 'message' => 'Món ăn không tồn tại']);
-            return;
-        }
-
-        $userId = $_SESSION['user_id'];
-        $cartId = $this->cartModel->getOrCreateCart($userId);
-
-        if ($this->cartModel->updateItemQuantity($cartId, $dishId, $quantity)) {
-            // Update session cart and get updated totals
-            $_SESSION['cart'] = $this->cartModel->getCartItems($userId);
-            $cartTotal = $this->cartModel->getCartTotal($userId);
-            $cartCount = $this->cartModel->getCartItemCount($userId);
-
-            $this->jsonResponse([
-                'success' => true,
-                'message' => $quantity > 0 ? 'Đã cập nhật số lượng' : 'Đã xóa món khỏi giỏ hàng',
-                'cart' => [
-                    'total' => $cartTotal,
-                    'count' => $cartCount,
-                    'items' => $_SESSION['cart']
-                ]
-            ]);
-        } else {
-            $this->jsonResponse(['success' => false, 'message' => 'Lỗi khi cập nhật số lượng']);
-        }
-    }
-
-    public function clear(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->jsonResponse(['success' => false, 'message' => 'Invalid request method']);
-            return;
-        }
-
-        if (!$this->isLoggedIn()) {
-            $this->jsonResponse(['success' => false, 'message' => 'Vui lòng đăng nhập để tiếp tục']);
-            return;
-        }
-
-        $userId = $_SESSION['user_id'];
-
-        if ($this->cartModel->clearCart($userId)) {
-            // Update session cart
-            $_SESSION['cart'] = [];
-            $this->jsonResponse(['success' => true, 'message' => 'Đã xóa tất cả món trong giỏ hàng']);
-        } else {
-            $this->jsonResponse(['success' => false, 'message' => 'Lỗi khi xóa giỏ hàng']);
-        }
-    }
-
-    public function buyNow(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->jsonResponse(['success' => false, 'message' => 'Invalid request method']);
-            return;
-        }
-
-        if (!$this->isLoggedIn()) {
-            $this->jsonResponse(['success' => false, 'message' => 'Vui lòng đăng nhập để tiếp tục']);
-            return;
-        }
-
-        $dishId = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
-
-        if (!$dishId) {
-            $this->jsonResponse(['success' => false, 'message' => 'Món ăn không hợp lệ']);
-            return;
-        }
-
-        // Check if dish exists
-        $dish = $this->dishModel->getDishById($dishId);
-        if (!$dish) {
-            $this->jsonResponse(['success' => false, 'message' => 'Món ăn không tồn tại']);
-            return;
-        }
-
-        $userId = $_SESSION['user_id'];
-
-        if ($this->cartModel->replaceCartWithSingleItem($userId, $dishId)) {
-            // Update session cart
-            $_SESSION['cart'] = $this->cartModel->getCartItems($userId);
-            $this->jsonResponse(['success' => true, 'message' => 'Đã thêm món để thanh toán', 'redirect' => BASE_URL . 'checkout']);
-        } else {
-            $this->jsonResponse(['success' => false, 'message' => 'Lỗi khi thêm món vào giỏ hàng']);
-        }
-    }
-
-    public function getCount(): void
-    {
-        if (!$this->isLoggedIn()) {
-            $this->jsonResponse(['count' => 0]);
-            return;
-        }
-
-        $userId = $_SESSION['user_id'];
-        $count = $this->cartModel->getCartItemCount($userId);
-        $this->jsonResponse(['count' => $count]);
-    }
-
-    private function checkAuth(array $allowedRoles): void
-    {
-        if (!$this->isLoggedIn()) {
+        if (!is_logged_in()) {
+            $_SESSION['flash_message'] = 'Vui lòng đăng nhập để xem giỏ hàng của bạn.';
             header('Location: ' . BASE_URL . 'login');
             exit();
         }
 
-        $userRole = $_SESSION['user_role'] ?? null;
-        if (!in_array($userRole, $allowedRoles)) {
-            $_SESSION['error_message'] = 'Bạn không có quyền truy cập.';
-            header('Location: ' . BASE_URL);
-            exit();
-        }
+        $cart_items = $this->cartModel->getCartContents();
+        $total = $this->cartModel->calculateSubtotal();
+        require 'app/views/cart/index.php';
     }
 
-    private function isLoggedIn(): bool
+    public function add()
     {
-        return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+        $productId = filter_input(INPUT_POST, 'product_id', FILTER_VALIDATE_INT);
+        $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
+
+        if ($productId && $quantity) {
+            $this->cartModel->addToCart($productId, $quantity);
+        }
+
+        header('Location: cart.php');
+        exit();
     }
 
-    private function jsonResponse(array $data): void
+    public function updateQuantity()
     {
         header('Content-Type: application/json');
-        echo json_encode($data);
+        $cartItemId = filter_input(INPUT_POST, 'cart_item_id', FILTER_VALIDATE_INT);
+        $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
+
+        if ($cartItemId && $quantity) {
+            if ($this->cartModel->updateQuantity($cartItemId, $quantity)) {
+                echo json_encode(['success' => true, 'message' => 'Cập nhật số lượng thành công']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Không thể cập nhật số lượng']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
+        }
+        exit();
+    }
+
+    public function remove()
+    {
+        header('Content-Type: application/json');
+        $cartItemId = filter_input(INPUT_POST, 'cart_item_id', FILTER_VALIDATE_INT);
+
+        if ($cartItemId) {
+            if ($this->cartModel->removeFromCart($cartItemId)) {
+                echo json_encode(['success' => true, 'message' => 'Xóa món thành công']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Không thể xóa món']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'ID món không hợp lệ']);
+        }
         exit();
     }
 }

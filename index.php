@@ -10,6 +10,7 @@ use App\Controllers\CartController;
 use App\Controllers\OrderController;
 use App\Controllers\AdminController;
 use App\Controllers\SearchController;
+use App\Controllers\FavoritesController;
 
 $router = new Router();
 
@@ -41,6 +42,9 @@ $router->post('/api/cart/update-quantity', [CartController::class, 'updateQuanti
 $router->post('/api/cart/clear', [CartController::class, 'clear']);
 $router->post('/api/cart/buy-now', [CartController::class, 'buyNow']);
 $router->get('/api/cart/count', [CartController::class, 'getCount']);
+
+// Favorites routes
+$router->get('/favorites', [FavoritesController::class, 'index']);
 
 // Order routes
 $router->get('/orders', [OrderController::class, 'index']);
@@ -77,6 +81,7 @@ $router->get('/checkout.php', [OrderController::class, 'checkout']);
 $router->post('/checkout.php', [OrderController::class, 'create']);
 $router->get('/orders.php', [OrderController::class, 'index']);
 $router->get('/order_confirmation.php', [OrderController::class, 'confirmation']);
+$router->get('/favorites.php', [FavoritesController::class, 'index']);
 $router->get('/admin_dashboard.php', [AdminController::class, 'dashboard']);
 $router->get('/admin_users.php', [AdminController::class, 'users']);
 $router->get('/dish_manage.php', [AdminController::class, 'dishes']);

@@ -4,539 +4,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Giỏ hàng CTUT Restaurant - Chọn món ăn yêu thích và thanh toán dễ dàng">
     <title>CTUT Restaurant - Giỏ hàng</title>
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/header.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/cart.css">
+    <link rel="stylesheet" href="assets/css/header.css">
 
-        .cart-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            margin-top: 120px;
-            margin-bottom: 40px;
-            overflow: hidden;
-        }
-
-        .cart-header {
-            background: linear-gradient(135deg, #ff6b6b, #ffa500);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .cart-header h2 {
-            margin: 0;
-            font-weight: 800;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .cart-item {
-            background: white;
-            border-radius: 15px;
-            margin-bottom: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            border: 1px solid #f0f0f0;
-        }
-
-        .cart-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .item-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
-            object-fit: cover;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .item-name {
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 0.5rem;
-        }
-
-        .item-price {
-            color: #e53e3e;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .quantity-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .quantity-btn {
-            width: 35px;
-            height: 35px;
-            border: none;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ff6b6b, #ffa500);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-
-        .quantity-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-        }
-
-        .quantity-btn:disabled {
-            background: #cbd5e0;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .quantity-display {
-            background: #f7fafc;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            min-width: 50px;
-            text-align: center;
-            border: 2px solid #e2e8f0;
-        }
-
-        .remove-btn {
-            background: linear-gradient(135deg, #e53e3e, #c53030);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .remove-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
-        }
-
-        .cart-summary {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            position: sticky;
-            top: 140px;
-        }
-
-        .summary-header {
-            background: linear-gradient(135deg, #48bb78, #38a169);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-        }
-
-        .summary-content {
-            padding: 1.5rem;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-        }
-
-        .summary-row.total {
-            border-top: 2px solid #e2e8f0;
-            padding-top: 1rem;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #2d3748;
-        }
-
-        .checkout-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #48bb78, #38a169);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 0.5rem;
-        }
-
-        .checkout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
-        }
-
-        .clear-btn {
-            width: 100%;
-            padding: 0.8rem;
-            background: transparent;
-            color: #718096;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .clear-btn:hover {
-            background: #fed7d7;
-            border-color: #fc8181;
-            color: #e53e3e;
-        }
-
-        .empty-cart {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #718096;
-        }
-
-        .empty-cart i {
-            font-size: 4rem;
-            color: #cbd5e0;
-            margin-bottom: 1rem;
-        }
-
-        .empty-cart h3 {
-            color: #4a5568;
-            margin-bottom: 1rem;
-        }
-
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, .3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .cart-container {
-                margin-top: 100px;
-                margin-left: 1rem;
-                margin-right: 1rem;
-            }
-
-            .cart-item {
-                padding: 1rem;
-            }
-
-            .item-image {
-                width: 60px;
-                height: 60px;
-            }
-
-            .cart-summary {
-                position: static;
-                margin-top: 2rem;
-            }
-        }
-    </style>
+    <!-- Base URL for JavaScript -->
+    <script>
+        const BASE_URL = '<?php echo BASE_URL; ?>';
+    </script>
 </head>
 
 <body>
-    <?php
-    $headerPath = dirname(dirname(dirname(__DIR__))) . '/templates/header.php';
-    if (file_exists($headerPath)) {
-        require_once $headerPath;
-    }
-    ?>
+    <!-- Background Overlay -->
+    <div class="background-overlay"></div>
 
-    <div class="container">
-        <div class="cart-container">
-            <div class="cart-header">
-                <h2>
-                    <i class="fas fa-shopping-cart"></i> Giỏ hàng của bạn
-                    <span class="badge bg-light text-dark ms-2" id="cart-count"><?php echo $cartCount; ?></span>
-                </h2>
-            </div>
+    <!-- Header -->
+    <?php include 'templates/header.php'; ?>
 
-            <?php if (empty($cartItems)): ?>
-                <div class="empty-cart">
-                    <i class="fas fa-shopping-cart"></i>
-                    <h3>Giỏ hàng trống</h3>
-                    <p>Bạn chưa có món ăn nào trong giỏ hàng</p>
-                    <a href="<?php echo BASE_URL; ?>" class="btn btn-primary">
-                        <i class="fas fa-utensils"></i> Xem thực đơn
-                    </a>
-                </div>
-            <?php else: ?>
-                <div class="row">
-                    <div class="col-lg-8">
-                        <div class="cart-items p-3">
-                            <?php foreach ($cartItems as $item): ?>
-                                <div class="cart-item" data-dish-id="<?php echo $item['id']; ?>">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-2 col-3">
-                                            <img src="<?php echo htmlspecialchars($item['image'] ?: 'https://via.placeholder.com/100x100?text=No+Image'); ?>"
-                                                alt="<?php echo htmlspecialchars($item['name']); ?>"
-                                                class="item-image">
+    <!-- Alert Messages -->
+    <div id="alert-container" class="alert-container"></div>
+
+    <!-- Main Content -->
+    <div class="container-xxl px-3">
+        <div class="row g-3">
+            <!-- Cart Items Section -->
+            <div class="col-lg-7 col-md-7">
+                <div class="cart-section">
+                    <!-- Cart Header -->
+                    <div class="cart-header">
+                        <h2><i class="fas fa-shopping-cart me-3"></i>Giỏ hàng của bạn</h2>
+                        <p class="mb-0">Chọn món và thanh toán dễ dàng</p>
+                    </div>
+
+                    <?php if (!empty($cart_items)): ?>
+                        <!-- Select All Section -->
+                        <div class="select-all-section">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                <label class="select-all-checkbox d-flex align-items-center">
+                                    <input type="checkbox" id="select-all" class="me-2">
+                                    <span>Chọn tất cả</span>
+                                </label>
+                                <div class="selected-info">
+                                    <span class="selected-count" id="selected-count">0</span>
+                                    <span>món đã chọn</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search Section -->
+                        <div class="search-section">
+                            <div class="search-box position-relative">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="search-input" id="search-input"
+                                    placeholder="Tìm kiếm món ăn trong giỏ hàng..." autocomplete="off">
+                                <button class="search-clear" id="search-clear">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Cart Items -->
+                    <div class="cart-items" id="cart-items">
+                        <?php if (empty($cart_items)): ?>
+                            <div class="empty-cart text-center py-5">
+                                <i class="fas fa-shopping-cart mb-3"></i>
+                                <h3>Giỏ hàng trống</h3>
+                                <p class="mb-4">Thêm món ăn yêu thích của bạn để tiếp tục!</p>
+                                <a href="index.php" class="btn btn-primary btn-view-menu">
+                                    <i class="fas fa-utensils me-2"></i>Xem thực đơn
+                                </a>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($cart_items as $item): ?>
+                                <div class="cart-item" data-id="<?php echo $item['id']; ?>">
+
+                                    <div class="item-checkbox-container">
+                                        <input type="checkbox" class="item-checkbox"
+                                            data-id="<?php echo $item['id']; ?>"
+                                            id="item-<?php echo $item['id']; ?>">
+                                    </div>
+
+                                    <div class="item-image-container">
+                                        <img src="<?php echo htmlspecialchars($item['image'] ?? 'assets/images/placeholder.jpg'); ?>"
+                                            alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                            class="item-image" loading="lazy">
+                                    </div>
+
+                                    <div class="item-info flex-grow-1">
+                                        <h5 class="item-name"><?php echo htmlspecialchars($item['name']); ?></h5>
+                                        <div class="item-price fw-bold text-danger">
+                                            <?php echo number_format($item['price'], 0, ',', '.') . 'đ'; ?>
                                         </div>
-                                        <div class="col-md-4 col-9">
-                                            <h5 class="item-name"><?php echo htmlspecialchars($item['name']); ?></h5>
-                                            <p class="item-price mb-0"><?php echo number_format($item['price'], 0, ',', '.'); ?>đ</p>
-                                        </div>
-                                        <div class="col-md-3 col-6 mt-2 mt-md-0">
-                                            <div class="quantity-controls">
-                                                <button class="quantity-btn" onclick="updateQuantity(<?php echo $item['id']; ?>, <?php echo $item['quantity'] - 1; ?>)" <?php echo $item['quantity'] <= 1 ? 'disabled' : ''; ?>>
-                                                    <i class="fas fa-minus"></i>
-                                                </button>
-                                                <span class="quantity-display"><?php echo $item['quantity']; ?></span>
-                                                <button class="quantity-btn" onclick="updateQuantity(<?php echo $item['id']; ?>, <?php echo $item['quantity'] + 1; ?>)">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2 col-4 mt-2 mt-md-0">
-                                            <strong class="item-price"><?php echo number_format($item['total_price'], 0, ',', '.'); ?>đ</strong>
-                                        </div>
-                                        <div class="col-md-1 col-2 mt-2 mt-md-0">
-                                            <button class="remove-btn" onclick="removeFromCart(<?php echo $item['id']; ?>)">
-                                                <i class="fas fa-trash"></i>
+                                    </div>
+
+                                    <div class="item-controls">
+                                        <div class="quantity-controls d-flex align-items-center">
+                                            <button type="button" class="quantity-btn decrease"
+                                                data-cart-item-id="<?php echo $item['id']; ?>"
+                                                data-action="decrease"
+                                                <?php echo $item['quantity'] <= 1 ? 'disabled' : ''; ?>>
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <span class="quantity-display mx-3"><?php echo $item['quantity']; ?></span>
+                                            <button type="button" class="quantity-btn increase"
+                                                data-cart-item-id="<?php echo $item['id']; ?>"
+                                                data-action="increase">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="remove-btn ms-3"
+                                                data-cart-item-id="<?php echo $item['id']; ?>"
+                                                title="Xóa món khỏi giỏ hàng">
+                                                <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-4">
-                        <div class="cart-summary">
-                            <div class="summary-header">
-                                <h5 class="mb-0">Tóm tắt đơn hàng</h5>
-                            </div>
-                            <div class="summary-content">
-                                <div class="summary-row">
-                                    <span>Tạm tính:</span>
-                                    <span id="subtotal"><?php echo number_format($cartTotal, 0, ',', '.'); ?>đ</span>
-                                </div>
-                                <div class="summary-row">
-                                    <span>Phí giao hàng:</span>
-                                    <span>Miễn phí</span>
-                                </div>
-                                <div class="summary-row total">
-                                    <strong>Tổng cộng:</strong>
-                                    <strong id="total"><?php echo number_format($cartTotal, 0, ',', '.'); ?>đ</strong>
-                                </div>
-                                <button class="checkout-btn" onclick="goToCheckout()">
-                                    <i class="fas fa-credit-card"></i> Thanh toán
-                                </button>
-                                <button class="clear-btn" onclick="clearCart()">
-                                    <i class="fas fa-trash"></i> Xóa tất cả
-                                </button>
-                            </div>
-                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
-            <?php endif; ?>
+            </div>
+
+            <!-- Checkout Section -->
+            <div class="col-lg-5 col-md-5">
+                <div class="checkout-section sticky-top">
+                    <!-- Checkout Header -->
+                    <div class="checkout-header">
+                        <h3><i class="fas fa-credit-card me-2"></i>Thanh toán</h3>
+                    </div>
+
+                    <div class="checkout-content">
+                        <!-- Delivery Options -->
+                        <div class="delivery-section mb-4">
+                            <div class="section-title mb-3">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <span>Địa điểm nhận hàng</span>
+                            </div>
+                            <div class="delivery-options">
+                                <div class="delivery-option selected" data-delivery="pickup">
+                                    <input type="radio" name="delivery" value="pickup" id="pickup" checked>
+                                    <label for="pickup" class="flex-grow-1">
+                                        <strong>Nhận tại cửa hàng</strong>
+                                        <div class="text-muted small">Miễn phí - Sẵn sàng trong 15 phút</div>
+                                    </label>
+                                </div>
+                                <div class="delivery-option" data-delivery="delivery">
+                                    <input type="radio" name="delivery" value="delivery" id="delivery">
+                                    <label for="delivery" class="flex-grow-1">
+                                        <strong>Giao hàng tận nơi</strong>
+                                        <div class="text-muted small">Phí giao hàng 25,000đ - 30-45 phút</div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Address Input Container -->
+                            <div class="address-input-container" id="address-input-container">
+                                <div class="mt-3">
+                                    <input type="text" id="address-input" class="form-control mb-2"
+                                        placeholder="Nhập địa chỉ giao hàng...">
+                                    <input type="tel" id="phone-input" class="form-control mb-2"
+                                        placeholder="Nhập số điện thoại (10 số)..." pattern="[0][0-9]{9}">
+                                    <button class="btn btn-outline-primary w-100" id="confirm-address-btn" disabled>
+                                        Xác nhận địa chỉ
+                                    </button>
+                                    <div id="map" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Methods -->
+                        <div class="payment-section mb-4">
+                            <div class="section-title mb-3">
+                                <i class="fas fa-wallet me-2"></i>
+                                <span>Phương thức thanh toán</span>
+                            </div>
+                            <div class="payment-methods">
+                                <div class="payment-method selected" data-payment="cod">
+                                    <input type="radio" name="payment" value="cod" id="cod" checked>
+                                    <label for="cod" class="flex-grow-1">
+                                        <strong>Thanh toán khi nhận hàng</strong>
+                                        <div class="text-muted small">Tiền mặt hoặc thẻ</div>
+                                    </label>
+                                </div>
+                                <div class="payment-method" data-payment="vnpay">
+                                    <input type="radio" name="payment" value="vnpay" id="vnpay">
+                                    <label for="vnpay" class="flex-grow-1">
+                                        <strong>VNPay</strong>
+                                        <div class="text-muted small">Thanh toán online an toàn</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Summary -->
+                        <div class="order-summary mb-4">
+                            <div class="summary-row d-flex justify-content-between mb-2">
+                                <span>Tạm tính:</span>
+                                <span id="subtotal"><?php echo number_format($total, 0, ',', '.') . 'đ'; ?></span>
+                            </div>
+                            <div class="summary-row d-flex justify-content-between mb-2">
+                                <span>Phí giao hàng:</span>
+                                <span id="delivery-fee">0đ</span>
+                            </div>
+                            <div class="summary-row d-flex justify-content-between mb-2">
+                                <span>Giảm giá:</span>
+                                <span id="discount">0đ</span>
+                            </div>
+                            <hr>
+                            <div class="summary-row total d-flex justify-content-between">
+                                <span class="fw-bold">Tổng cộng:</span>
+                                <span id="total" class="fw-bold text-danger">
+                                    <?php echo number_format($total, 0, ',', '.') . 'đ'; ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Checkout Button -->
+                        <button type="button" class="checkout-btn btn btn-success w-100" id="checkout-btn"
+                            <?php echo empty($cart_items) ? 'disabled' : ''; ?>>
+                            <i class="fas fa-check-circle me-2"></i>
+                            Thanh toán (<span id="checkout-count"><?php echo count($cart_items); ?></span> món)
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <?php
-    $footerPath = dirname(dirname(dirname(__DIR__))) . '/templates/footer.php';
-    if (file_exists($footerPath)) {
-        require_once $footerPath;
-    }
-    ?>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const BASE_URL = '<?php echo BASE_URL; ?>';
-
-        function showLoading(element) {
-            element.disabled = true;
-            element.innerHTML = '<span class="spinner"></span> Đang xử lý...';
-        }
-
-        function hideLoading(element, originalText) {
-            element.disabled = false;
-            element.innerHTML = originalText;
-        }
-
-        function updateCartDisplay(cartData) {
-            if (cartData.items) {
-                // Update cart items dynamically
-                const cartItemsContainer = document.querySelector('.cart-items');
-                if (cartData.items.length === 0) {
-                    // Show empty cart
-                    document.querySelector('.cart-container').innerHTML = `
-                        <div class="cart-header">
-                            <h2><i class="fas fa-shopping-cart"></i> Giỏ hàng của bạn <span class="badge bg-light text-dark ms-2">0</span></h2>
-                        </div>
-                        <div class="empty-cart">
-                            <i class="fas fa-shopping-cart"></i>
-                            <h3>Giỏ hàng trống</h3>
-                            <p>Bạn chưa có món ăn nào trong giỏ hàng</p>
-                            <a href="${BASE_URL}" class="btn btn-primary">
-                                <i class="fas fa-utensils"></i> Xem thực đơn
-                            </a>
-                        </div>
-                    `;
-                } else {
-                    // Update quantities and totals
-                    document.getElementById('cart-count').textContent = cartData.count;
-                    document.getElementById('subtotal').textContent = new Intl.NumberFormat('vi-VN').format(cartData.total) + 'đ';
-                    document.getElementById('total').textContent = new Intl.NumberFormat('vi-VN').format(cartData.total) + 'đ';
-                }
-            }
-        }
-
-        function updateQuantity(dishId, quantity) {
-            if (quantity < 0) return;
-
-            const button = event.target.closest('button');
-            const originalText = button.innerHTML;
-            showLoading(button);
-
-            fetch(BASE_URL + 'api/cart/update-quantity', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `dish_id=${dishId}&quantity=${quantity}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    hideLoading(button, originalText);
-                    if (data.success) {
-                        if (quantity === 0) {
-                            // Remove item from DOM
-                            const cartItem = document.querySelector(`[data-dish-id="${dishId}"]`);
-                            cartItem.style.animation = 'slideOut 0.3s ease-in-out forwards';
-                            setTimeout(() => {
-                                cartItem.remove();
-                                // Check if cart is empty
-                                const remainingItems = document.querySelectorAll('.cart-item');
-                                if (remainingItems.length === 0) {
-                                    location.reload();
-                                }
-                            }, 300);
-                        } else {
-                            location.reload(); // For now, reload to update totals
-                        }
-                    } else {
-                        alert(data.message || 'Có lỗi xảy ra');
-                    }
-                })
-                .catch(error => {
-                    hideLoading(button, originalText);
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi cập nhật giỏ hàng');
-                });
-        }
-
-        function removeFromCart(dishId) {
-            if (!confirm('Bạn có chắc muốn xóa món này khỏi giỏ hàng?')) return;
-
-            const button = event.target.closest('button');
-            const originalText = button.innerHTML;
-            showLoading(button);
-
-            fetch(BASE_URL + 'api/cart/remove', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `dish_id=${dishId}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    hideLoading(button, originalText);
-                    if (data.success) {
-                        const cartItem = document.querySelector(`[data-dish-id="${dishId}"]`);
-                        cartItem.style.animation = 'slideOut 0.3s ease-in-out forwards';
-                        setTimeout(() => {
-                            cartItem.remove();
-                            // Check if cart is empty
-                            const remainingItems = document.querySelectorAll('.cart-item');
-                            if (remainingItems.length === 0) {
-                                location.reload();
-                            } else {
-                                // Update totals
-                                location.reload();
-                            }
-                        }, 300);
-                    } else {
-                        alert(data.message || 'Có lỗi xảy ra');
-                    }
-                })
-                .catch(error => {
-                    hideLoading(button, originalText);
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi xóa món khỏi giỏ hàng');
-                });
-        }
-
-        function clearCart() {
-            if (!confirm('Bạn có chắc muốn xóa tất cả món trong giỏ hàng?')) return;
-
-            const button = event.target;
-            const originalText = button.innerHTML;
-            showLoading(button);
-
-            fetch(BASE_URL + 'api/cart/clear', {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    hideLoading(button, originalText);
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert(data.message || 'Có lỗi xảy ra');
-                    }
-                })
-                .catch(error => {
-                    hideLoading(button, originalText);
-                    console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi xóa giỏ hàng');
-                });
-        }
-
-        function goToCheckout() {
-            window.location.href = BASE_URL + 'checkout';
-        }
-
-        // Add slide-out animation for removed items
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&libraries=places,geocoding&callback=initMap" async defer></script>
+    <!-- Custom JavaScript -->
+    <script src="assets/js/cart.js"></script>
 </body>
 
 </html>

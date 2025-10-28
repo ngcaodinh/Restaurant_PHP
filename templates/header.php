@@ -44,12 +44,16 @@ $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
             </nav>
             <div class="nav-icons">
                 <div class="icon-wrapper">
-                    <i class="nav-icon fas fa-shopping-cart" onclick="toggleCart()"></i>
-                    <span class="cart-count" id="cart-count"><?php echo htmlspecialchars($cart_count); ?></span>
+                    <a href="<?php echo BASE_URL; ?>cart" style="text-decoration: none; color: inherit;">
+                        <i class="nav-icon fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cart-count"><?php echo htmlspecialchars($cart_count); ?></span>
+                    </a>
                 </div>
                 <div class="icon-wrapper">
-                    <i class="nav-icon fas fa-heart" onclick="toggleWishlist()"></i>
-                    <span class="cart-count" id="wishlist-count"><?php echo htmlspecialchars($wishlist_count); ?></span>
+                    <a href="<?php echo BASE_URL; ?>favorites.php" style="text-decoration: none; color: inherit;">
+                        <i class="nav-icon fas fa-heart"></i>
+                        <span class="cart-count" id="wishlist-count"><?php echo htmlspecialchars($wishlist_count); ?></span>
+                    </a>
                 </div>
                 <div class="icon-wrapper user-icon">
                     <i class="nav-icon fas fa-user"></i>
@@ -63,29 +67,7 @@ $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
                             <?php if (is_premium_or_admin()): ?>
                                 <a href="/Restaurant_PHP/dish_manage.php"><i class="fas fa-utensils"></i> Quản lý món ăn</a>
                             <?php endif; ?>
-                            <?php
-                            $cart_count = 0;
-                            $wishlist_count = 0;
-                            if (is_logged_in()) {
-                                $user_id = $_SESSION['user_id'];
-                                try {
-                                    $pdo = Database::getInstance();
-                                    // Get cart count
-                                    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ?");
-                                    $stmt->execute([$user_id]);
-                                    $cart_count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
-
-                                    // Get wishlist count (assuming there's a wishlist table)
-                                    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM wishlist WHERE user_id = ? AND deleted_at IS NULL");
-                                    $stmt->execute([$user_id]);
-                                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                                    $wishlist_count = $result ? $result['count'] : 0;
-                                } catch (Exception $e) {
-                                    error_log('Error fetching cart/wishlist count: ' . $e->getMessage());
-                                }
-                            }
-                            ?>
-                            <a href="<?php echo BASE_URL . 'cart.php'; ?>"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
+                            <a href="<?php echo BASE_URL . 'cart'; ?>"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
                             <a href="/Restaurant_PHP/checkout.php"><i class="fas fa-credit-card"></i> Thanh toán</a>
                             <a href="/Restaurant_PHP/orders.php"><i class="fas fa-list-alt"></i> Đơn hàng</a>
                             <hr>

@@ -1,3 +1,5 @@
+let products = {};
+
 let cart = [];
 let wishlist = [];
 let currentProductId = '';
@@ -392,7 +394,7 @@ function filterDishes(category, event = null) {
     // Lấy từ khóa tìm kiếm
     const searchInput = document.getElementById('searchInput');
     const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-    
+
 
     // Xóa nội dung hiện tại của dish-grid
     dishGrid.innerHTML = '';
@@ -405,8 +407,8 @@ function filterDishes(category, event = null) {
         console.log(`Filtered products for ${category}:`, filteredProducts);
     }
     if (query) {
-        filteredProducts = filteredProducts.filter(product => 
-            product.name.toLowerCase().includes(query) || 
+        filteredProducts = filteredProducts.filter(product =>
+            product.name.toLowerCase().includes(query) ||
             product.description.toLowerCase().includes(query)
         );
         console.log(`Filtered products for query "${query}":`, filteredProducts);
@@ -422,7 +424,7 @@ function filterDishes(category, event = null) {
     filteredProducts.sort((a, b) => b.salesCount - a.salesCount);
 
     // Tạo thẻ dish-card
-    filteredProducts.forEach((product, index) => {
+    filteredProducts.forEach((product) => {
         const isBestSeller = product.isBestSeller;
         const dishCard = document.createElement('div');
         dishCard.className = `dish-card fade-in ${isBestSeller ? 'best-seller' : ''}`;
@@ -560,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('.filter-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             const category = this.getAttribute('onclick').match(/'([^']+)'/)[1];
             filterDishes(category, e);
             const ripple = document.createElement('span');
@@ -599,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
+        anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));
             if (target) {
@@ -630,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelectorAll('.btn, .action-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             const ripple = document.createElement('span');
             const rect = this.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);
@@ -659,7 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-window.onclick = function(event) {
+window.onclick = function (event) {
     const modal = document.getElementById('productModal');
     const zoomModal = document.getElementById('zoomModal');
     if (event.target === modal) {
@@ -670,7 +672,7 @@ window.onclick = function(event) {
     }
 };
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         closeModal();
         closeZoomModal();
@@ -685,7 +687,7 @@ function searchDishes() {
     const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
     const activeFilter = document.querySelector('.filter-btn.active');
     const category = activeFilter ? activeFilter.getAttribute('onclick').match(/'([^']+)'/)[1] : 'all';
-    
+
     console.log('Search triggered with query:', query, 'and category:', category);
     filterDishes(category, null, query);
 }
@@ -762,7 +764,7 @@ function filterDishes(category, event = null, searchQuery = '') {
     dishGrid.innerHTML = '';
 
     // Tạo thẻ dish-card
-    filteredProducts.forEach((product, index) => {
+    filteredProducts.forEach((product) => {
         const isBestSeller = product.isBestSeller;
         const dishCard = document.createElement('div');
         dishCard.className = `dish-card fade-in ${isBestSeller ? 'best-seller' : ''}`;
@@ -841,163 +843,3 @@ function filterDishes(category, event = null, searchQuery = '') {
     scrollToElement('dishes');
 }
 
-// Gắn sự kiện cho ô tìm kiếm trong DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, products:', products);
-    // Kiểm tra trạng thái đăng nhập
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', BASE_URL + 'ajax_handler.php', true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (!response.is_logged_in) {
-                    cart = [];
-                    wishlist = [];
-                    updateCounters();
-                }
-            } catch (e) {
-                console.error('Error parsing login check response:', e);
-            }
-        }
-    };
-    xhr.send('action=check_login');
-    
-    // Khởi tạo hiển thị tất cả món ăn
-    filterDishes('all');
-
-    // Gắn sự kiện cho ô tìm kiếm
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                console.log('Enter pressed, triggering search');
-                searchDishes();
-            }
-        });
-        // Gắn sự kiện cho biểu tượng tìm kiếm
-        const searchIcon = document.querySelector('.search-icon');
-        if (searchIcon) {
-            searchIcon.addEventListener('click', searchDishes);
-        }
-    } else {
-        console.error('Search input element not found!');
-    }
-
-    // Các sự kiện khác giữ nguyên
-    const userIcon = document.querySelector('.user-icon');
-    if (userIcon) {
-        userIcon.addEventListener('click', toggleUserMenu);
-    } else {
-        console.error('User icon element not found!');
-    }
-
-    const hamburger = document.querySelector('.hamburger');
-    if (hamburger) {
-        hamburger.addEventListener('click', () => {
-            const menuNav = document.querySelector('.menu-nav');
-            if (menuNav) menuNav.classList.toggle('active');
-        });
-    }
-
-    document.querySelectorAll('.filter-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            const category = this.getAttribute('onclick').match(/'([^']+)'/)[1];
-            console.log('Filter button clicked, category:', category);
-            filterDishes(category, e);
-            const ripple = document.createElement('span');
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-
-            ripple.style.cssText = `
-                position: absolute;
-                border-radius: 50%;
-                background: rgba(255,255,255,0.3);
-                transform: scale(0);
-                left: ${x}px;
-                top: ${y}px;
-                width: ${size}px;
-                height: ${size}px;
-                animation: ripple 0.6s ease;
-                pointer-events: none;
-            `;
-
-            this.style.position = 'relative';
-            this.style.overflow = 'hidden';
-            this.appendChild(ripple);
-
-            setTimeout(() => ripple.remove(), 600);
-        });
-    });
-
-    document.addEventListener('click', (e) => {
-        const userIcon = document.querySelector('.user-icon');
-        const userMenu = document.getElementById('userMenu');
-        if (userMenu && !userIcon.contains(e.target) && !userMenu.contains(e.target)) {
-            userMenu.classList.remove('show');
-        }
-    });
-
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    });
-
-    const scrollTopBtn = document.getElementById('scrollTop');
-    if (scrollTopBtn) {
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                scrollTopBtn.classList.add('show');
-            } else {
-                scrollTopBtn.classList.remove('show');
-            }
-        });
-
-        scrollTopBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
-
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            showNotification('🎉 Chào mừng bạn đến với CTUT Restaurant! Khuyến mãi 20% cho sinh viên!', 'success');
-        }, 1000);
-    });
-
-    document.querySelectorAll('.btn, .action-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            const ripple = document.createElement('span');
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-
-            ripple.style.cssText = `
-                position: absolute;
-                border-radius: 50%;
-                background: rgba(255,255,255,0.3);
-                transform: scale(0);
-                left: ${x}px;
-                top: ${y}px;
-                width: ${size}px;
-                height: ${size}px;
-                animation: ripple 0.6s ease;
-                pointer-events: none;
-            `;
-
-            this.style.position = 'relative';
-            this.style.overflow = 'hidden';
-            this.appendChild(ripple);
-
-            setTimeout(() => ripple.remove(), 600);
-        });
-    });
-});

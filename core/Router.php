@@ -79,7 +79,12 @@ class Router
 
         if (is_array($handler)) {
             [$class, $methodName] = $handler;
-            $controller = new $class();
+            if ($class === 'App\Controllers\CartController') {
+                $db = \Database::getInstance();
+                $controller = new $class($db);
+            } else {
+                $controller = new $class();
+            }
             // Store route parameters in $_GET for controller access
             $_GET = array_merge($_GET, $params);
             return $controller->$methodName();

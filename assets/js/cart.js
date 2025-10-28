@@ -197,7 +197,18 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             console.log(`Sending ${action} request for cart item ${cartItemId}`, { quantity });
 
-            const response = await fetch('cart.php', {
+            let url = '';
+            if (action === 'update_quantity') {
+                url = `${BASE_URL}api/cart/update-quantity`;
+            } else if (action === 'remove_item') {
+                url = `${BASE_URL}api/cart/remove`;
+            } else {
+                showAlert('Hành động không hợp lệ.', 'danger');
+                isLoading = false;
+                return;
+            }
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: formData

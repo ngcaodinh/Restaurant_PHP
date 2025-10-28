@@ -79,7 +79,8 @@ if (session_status() === PHP_SESSION_NONE) {
  * @param int $dish_id ID của món ăn
  * @return array Kết quả xử lý
  */
-function add_to_cart($dish_id) {
+function add_to_cart($dish_id)
+{
     global $pdo;
     if (!is_logged_in()) {
         error_log('add_to_cart: User not logged in');
@@ -162,7 +163,8 @@ function add_to_cart($dish_id) {
  * @param int $dish_id ID của món ăn
  * @return array Kết quả xử lý
  */
-function buy_now($dish_id) {
+function buy_now($dish_id)
+{
     global $pdo;
     if (!is_logged_in()) {
         error_log('buy_now: User not logged in');
@@ -207,7 +209,7 @@ function buy_now($dish_id) {
         }
 
         // Xóa các món hiện có
-       $stmt = $pdo->prepare("DELETE FROM cart_items WHERE cart_id = ?");
+        $stmt = $pdo->prepare("DELETE FROM cart_items WHERE cart_id = ?");
         $stmt->execute([$cart_id]);
         error_log("buy_now: Cleared existing cart items for cart_id=$cart_id");
 
@@ -245,13 +247,33 @@ function add_to_wishlist($dish_id)
     if (!is_logged_in()) {
         return ['success' => false, 'message' => 'Vui lòng đăng nhập để thêm vào danh sách yêu thích.'];
     }
-    // Logic thêm vào danh sách yêu thích
-    // Ví dụ: Thêm vào $_SESSION['wishlist']
-    if (!isset($_SESSION['wishlist'])) {
-        $_SESSION['wishlist'] = [];
+    $dish_id = filter_var($dish_id, FILTER_VALIDATE_INT);
+    if (!$dish_id) {
+        return ['success' => false, 'message' => 'ID món ăn không hợp lệ.'];
     }
-    if (!in_array($dish_id, $_SESSION['wishlist'])) {
-        $_SESSION['wishlist'][] = $dish_id;
+
+    $user_id = get_user_id();
+
+    try {
+        global $pdo;
+
+        // Check if the item is already in favorites
+        $stmt = $pdo->prepare("SELECT id FROM favorites WHERE user_id = ? AND dish_id = ?");
+        $stmt->execute([$user_id, $dish_id]);
+
+        if ($stmt->fetch()) {
+            // Item exists, so remove it
+            $stmt = $pdo->prepare("DELETE FROM favorites WHERE user_id = ? AND dish_id = ?");
+            $stmt->execute([$user_id, $dish_id]);
+            return ['success' => true, 'message' => 'Đã xóa khỏi danh sách yêu thích.', 'action' => 'removed'];
+        } else {
+            // Item does not exist, so add it
+            $stmt = $pdo->prepare("INSERT INTO favorites (user_id, dish_id) VALUES (?, ?)");
+            $stmt->execute([$user_id, $dish_id]);
+            return ['success' => true, 'message' => 'Đã thêm vào danh sách yêu thích.', 'action' => 'added'];
+        }
+    } catch (Exception $e) {
+        error_log('Function error (add_to_wishlist): ' . $e->getMessage());
+        return ['success' => false, 'message' => 'Có lỗi xảy ra, vui lòng thử lại.'];
     }
-    return ['success' => true, 'message' => 'Đã thêm vào danh sách yêu thích.'];
 }
