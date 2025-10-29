@@ -136,7 +136,7 @@
 
 .item-image-container {
     width: 256.4px;
-    height: 220px; 
+    height: 220px;
     margin: 0 auto;
     /* Center the container */
     overflow: hidden;
@@ -200,12 +200,15 @@
     position: absolute;
     top: 10px;
     right: 10px;
+    z-index: 10;
+    /* Ensure it's above the image */
 }
 
 .btn-remove-favorite {
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
+    z-index: 1000;
     width: 36px;
     height: 36px;
     border-radius: 50%;
