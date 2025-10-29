@@ -26,6 +26,12 @@
                     <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
                     <h2 class="text-success mt-3">Đặt hàng thành công!</h2>
                     <p class="text-muted">Cảm ơn bạn đã đặt hàng tại CTUT Restaurant</p>
+                    <?php
+                    // Unset the session message so it doesn't appear again
+                    if (isset($_SESSION['success_message'])) {
+                        unset($_SESSION['success_message']);
+                    }
+                    ?>
                 </div>
 
                 <div class="card">
@@ -93,7 +99,7 @@
                                 <tfoot>
                                     <tr>
                                         <th colspan="3">Tổng cộng:</th>
-                                        <th><?php echo number_format($order['total_amount'], 0, ',', '.'); ?>đ</th>
+                                        <th><?php echo number_format($order['total_price'], 0, ',', '.'); ?>đ</th>
                                     </tr>
                                 </tfoot>
                             </table>

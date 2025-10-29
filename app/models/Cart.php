@@ -78,7 +78,9 @@ class Cart
 
     public function getCartContents()
     {
-        if (!$this->user_id) return [];
+        $userId = $_SESSION['user_id'] ?? null;
+        if (!$userId) return [];
+
         try {
             $stmt = $this->db->prepare("
                 SELECT ci.id, ci.quantity, d.id AS dish_id, d.name, d.price, d.image, d.description
@@ -88,10 +90,72 @@ class Cart
                 WHERE c.user_id = ? AND d.deleted_at IS NULL
                 ORDER BY ci.created_at DESC
             ");
-            $stmt->execute([$this->user_id]);
+            $stmt->execute([$userId]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             return [];
+        }
+    }
+
+    public function getCartItemsByIds(array $itemIds, int $userId)
+    {
+        if (empty($itemIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($itemIds), '?'));
+
+        $sql = "
+            SELECT ci.id, ci.quantity, d.id AS dish_id, d.name, d.price, d.image, d.description
+            FROM cart_items ci
+            JOIN carts c ON ci.cart_id = c.id
+            JOIN dishes d ON ci.dish_id = d.id
+            WHERE c.user_id = ? AND ci.id IN ($placeholders) AND d.deleted_at IS NULL
+        ";
+
+        $params = array_merge([$userId], $itemIds);
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log('Error fetching cart items by IDs: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function removeItemsByIds(array $itemIds)
+    {
+        if (empty($itemIds)) {
+            return false;
+        }
+
+        $userId = $_SESSION['user_id'] ?? null;
+        if (!$userId) {
+            return false;
+        }
+
+        $cartIdStmt = $this->db->prepare("SELECT id FROM carts WHERE user_id = ?");
+        $cartIdStmt->execute([$userId]);
+        $cart = $cartIdStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$cart) {
+            return true; // No cart, so nothing to remove
+        }
+        $cartId = $cart['id'];
+
+        $placeholders = implode(',', array_fill(0, count($itemIds), '?'));
+        $sql = "DELETE FROM cart_items WHERE cart_id = ? AND id IN ($placeholders)";
+
+        $params = array_merge([$cartId], $itemIds);
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute($params);
+        } catch (Exception $e) {
+            error_log("Error removing items from cart: " . $e->getMessage());
+            return false;
         }
     }
 

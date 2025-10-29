@@ -9,9 +9,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/checkout.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/header.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/footer.css">
 </head>
 
 <body>
+    <div class="background-overlay"></div>
     <?php
     $headerPath = dirname(dirname(dirname(__DIR__))) . '/templates/header.php';
     if (file_exists($headerPath)) {
@@ -50,8 +52,10 @@
                         <h5>Thông tin giao hàng</h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="/checkout">
+                        <form id="checkout-form" method="POST" action="<?php echo BASE_URL; ?>checkout">
+                            <input type="hidden" name="checkout_items" value="<?php echo htmlspecialchars(json_encode(array_column($cartItems, 'id'))); ?>">
                             <div class="mb-3">
+                                <input type="hidden" name="total_price" value="<?php echo $cartTotal; ?>">
                                 <label for="delivery_address" class="form-label">Địa chỉ giao hàng *</label>
                                 <textarea class="form-control" id="delivery_address" name="delivery_address"
                                     rows="3" required placeholder="Nhập địa chỉ giao hàng chi tiết"></textarea>
@@ -119,7 +123,7 @@
                 </div>
 
                 <div class="mt-3">
-                    <a href="/cart" class="btn btn-outline-secondary w-100">
+                    <a href="<?php echo BASE_URL; ?>cart" class="btn btn-outline-secondary w-100">
                         <i class="fas fa-arrow-left"></i> Quay lại giỏ hàng
                     </a>
                 </div>
@@ -135,7 +139,30 @@
     ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkoutForm = document.getElementById('checkout-form');
+            if (checkoutForm) {
+                checkoutForm.addEventListener('submit', function(event) {
+                    const address = document.getElementById('delivery_address').value.trim();
+                    const phone = document.getElementById('phone').value.trim();
+
+                    if (!address || !phone) {
+                        event.preventDefault(); // Stop form submission
+                        alert('Vui lòng điền đầy đủ Địa chỉ giao hàng và Số điện thoại.');
+                        return;
+                    }
+
+                    const submitButton = checkoutForm.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+                    }
+                });
+            }
+        });
+    </script>
 
 </body>
 

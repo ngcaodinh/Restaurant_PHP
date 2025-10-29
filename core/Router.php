@@ -79,7 +79,7 @@ class Router
 
         if (is_array($handler)) {
             [$class, $methodName] = $handler;
-            if ($class === 'App\Controllers\CartController') {
+            if ($class === 'App\Controllers\CartController' || $class === 'App\Controllers\OrderController') {
                 $db = \Database::getInstance();
                 $controller = new $class($db);
             } else {

@@ -1,15 +1,18 @@
 <?php
 require_once 'config.php';
 
-class Database {
+class Database
+{
     private static $instance = null;
     private $pdo;
 
-    private function __construct() {
+    private function __construct()
+    {
         $this->connect();
     }
 
-    private function connect() {
+    private function connect()
+    {
         try {
             $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
             $this->pdo = new PDO($dsn, DB_USER, DB_PASS, [
@@ -24,7 +27,8 @@ class Database {
         }
     }
 
-    public static function getInstance() {
+    public static function getInstance()
+    {
         if (self::$instance === null) {
             self::$instance = new Database();
         }
@@ -55,4 +59,3 @@ class Database {
 }
 
 $pdo = Database::getInstance();
-?>

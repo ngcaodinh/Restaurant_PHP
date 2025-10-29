@@ -43,6 +43,15 @@
                         <p class="mb-0">Chọn món và thanh toán dễ dàng</p>
                     </div>
 
+                    <?php if (isset($_SESSION['error_message'])): ?>
+                        <div class="alert alert-danger mx-3">
+                            <?php
+                            echo $_SESSION['error_message'];
+                            unset($_SESSION['error_message']);
+                            ?>
+                        </div>
+                    <?php endif; ?>
+
                     <?php if (!empty($cart_items)): ?>
                         <!-- Select All Section -->
                         <div class="select-all-section">
@@ -228,11 +237,14 @@
                         </div>
 
                         <!-- Checkout Button -->
-                        <button type="button" class="checkout-btn btn btn-success w-100" id="checkout-btn"
-                            <?php echo empty($cart_items) ? 'disabled' : ''; ?>>
-                            <i class="fas fa-check-circle me-2"></i>
-                            Thanh toán (<span id="checkout-count"><?php echo count($cart_items); ?></span> món)
-                        </button>
+                        <form action="<?php echo BASE_URL; ?>cart/process-selection" method="POST" id="checkout-form">
+                            <input type="hidden" name="selected_items" id="selected-items-input">
+                            <button type="button" class="checkout-btn btn btn-success w-100" id="checkout-btn"
+                                <?php echo empty($cart_items) ? 'disabled' : ''; ?>>
+                                <i class="fas fa-check-circle me-2"></i>
+                                Thanh toán (<span id="checkout-count">0</span> món)
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

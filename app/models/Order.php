@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use PDO;
@@ -12,19 +13,19 @@ class Order
         $this->db = $db;
     }
 
-    public function createOrder(int $userId, array $orderData): ?int
+    public function createOrder(int $userId, array $orderData, array $cartItems): ?int
     {
         try {
             $this->db->beginTransaction();
 
             // Create order
             $stmt = $this->db->prepare("
-                INSERT INTO orders (user_id, total_amount, status, delivery_address, phone, notes, created_at, updated_at) 
+                                INSERT INTO orders (user_id, total_price, status, delivery_address, phone, notes, created_at, updated_at)
                 VALUES (?, ?, 'Pending', ?, ?, ?, NOW(), NOW())
             ");
             $stmt->execute([
                 $userId,
-                $orderData['total_amount'],
+                $orderData['total_price'],
                 $orderData['delivery_address'] ?? '',
                 $orderData['phone'] ?? '',
                 $orderData['notes'] ?? ''
@@ -32,9 +33,7 @@ class Order
 
             $orderId = $this->db->lastInsertId();
 
-            // Add order items from cart
-            $cartModel = new Cart($this->db);
-            $cartItems = $cartModel->getCartItems($userId);
+            // Add order items from the provided array
 
             foreach ($cartItems as $item) {
                 $stmt = $this->db->prepare("
@@ -43,18 +42,17 @@ class Order
                 ");
                 $stmt->execute([
                     $orderId,
-                    $item['id'],
+                    $item['dish_id'],
                     $item['quantity'],
                     $item['price']
                 ]);
 
                 // Update dish sales count
                 $stmt = $this->db->prepare("UPDATE dishes SET sales_count = sales_count + ? WHERE id = ?");
-                $stmt->execute([$item['quantity'], $item['id']]);
+                $stmt->execute([$item['quantity'], $item['dish_id']]);
             }
 
-            // Clear cart after order
-            $cartModel->clearCart($userId);
+
 
             $this->db->commit();
             return $orderId;
@@ -94,7 +92,7 @@ class Order
             SELECT 
                 o.id,
                 o.user_id,
-                o.total_amount,
+                                o.total_price,
                 o.status,
                 o.delivery_address,
                 o.phone,
@@ -107,7 +105,7 @@ class Order
             JOIN users u ON o.user_id = u.id
             WHERE o.id = ?
         ";
-        
+
         $params = [$orderId];
         if ($userId !== null) {
             $sql .= " AND o.user_id = ?";

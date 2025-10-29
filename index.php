@@ -43,6 +43,8 @@ $router->post('/api/cart/clear', [CartController::class, 'clear']);
 $router->post('/api/cart/buy-now', [CartController::class, 'buyNow']);
 $router->get('/api/cart/count', [CartController::class, 'getCount']);
 
+$router->post('/cart/process-selection', [CartController::class, 'processSelection']);
+
 // Favorites routes
 $router->get('/favorites', [FavoritesController::class, 'index']);
 

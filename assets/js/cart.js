@@ -536,11 +536,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Redirect to checkout page
-            window.location.href = 'checkout.php';
+            const selectedIds = Array.from(selectedItems).map(cb => cb.closest('.cart-item').dataset.id);
+            const selectedItemsInput = document.getElementById('selected-items-input');
+            selectedItemsInput.value = JSON.stringify(selectedIds);
+
+            // Submit the form
+            document.getElementById('checkout-form').submit();
         });
     }
 
     // Initialize cart summary on page load
     updateCartSummary();
 });
+
+

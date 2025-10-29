@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\CartModel;
+use App\Models\Cart;
 
 class CartController
 {
@@ -10,7 +10,7 @@ class CartController
 
     public function __construct($db)
     {
-        $this->cartModel = new CartModel($db);
+        $this->cartModel = new Cart($db);
     }
 
     public function index()
@@ -71,6 +71,28 @@ class CartController
         } else {
             echo json_encode(['success' => false, 'message' => 'ID món không hợp lệ']);
         }
+        exit();
+    }
+
+    public function processSelection(): void
+    {
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'cart');
+            exit();
+        }
+
+        $selectedItemsJson = $_POST['selected_items'] ?? '[]';
+        $selectedItemIds = json_decode($selectedItemsJson, true);
+
+        if (empty($selectedItemIds) || !is_array($selectedItemIds)) {
+            $_SESSION['error_message'] = 'Vui lòng chọn ít nhất một sản phẩm để thanh toán.';
+            header('Location: ' . BASE_URL . 'cart');
+            exit();
+        }
+
+        $_SESSION['checkout_items'] = $selectedItemIds;
+        header('Location: ' . BASE_URL . 'checkout');
         exit();
     }
 }
