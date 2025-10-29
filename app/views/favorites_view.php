@@ -19,7 +19,7 @@
     <div class="container-xxl px-3 mt-5">
         <div class="cart-section">
             <div class="cart-header">
-                <h2><i class="fas fa-heart me-3"></i>Sản phẩm yêu thích của bạn</h2>
+                <h2>Món ăn yêu thích</h2>
             </div>
 
             <div class="cart-items" id="favorite-items">
