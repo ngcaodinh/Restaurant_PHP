@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CTUT Restaurant - Thanh toán</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/checkout.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/header.css">
 </head>
+
 <body>
     <?php
     $headerPath = dirname(dirname(dirname(__DIR__))) . '/templates/header.php';
@@ -51,20 +53,20 @@
                         <form method="POST" action="/checkout">
                             <div class="mb-3">
                                 <label for="delivery_address" class="form-label">Địa chỉ giao hàng *</label>
-                                <textarea class="form-control" id="delivery_address" name="delivery_address" 
-                                          rows="3" required placeholder="Nhập địa chỉ giao hàng chi tiết"></textarea>
+                                <textarea class="form-control" id="delivery_address" name="delivery_address"
+                                    rows="3" required placeholder="Nhập địa chỉ giao hàng chi tiết"></textarea>
                             </div>
 
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Số điện thoại *</label>
-                                <input type="text" class="form-control" id="phone" name="phone" 
-                                       required placeholder="Nhập số điện thoại liên hệ">
+                                <input type="text" class="form-control" id="phone" name="phone"
+                                    required placeholder="Nhập số điện thoại liên hệ">
                             </div>
 
                             <div class="mb-3">
                                 <label for="notes" class="form-label">Ghi chú</label>
-                                <textarea class="form-control" id="notes" name="notes" 
-                                          rows="2" placeholder="Ghi chú thêm cho đơn hàng (tùy chọn)"></textarea>
+                                <textarea class="form-control" id="notes" name="notes"
+                                    rows="2" placeholder="Ghi chú thêm cho đơn hàng (tùy chọn)"></textarea>
                             </div>
 
                             <div class="d-grid">
@@ -90,24 +92,24 @@
                                         <span><?php echo htmlspecialchars($item['name']); ?></span>
                                         <small class="text-muted"> x<?php echo $item['quantity']; ?></small>
                                     </div>
-                                    <span><?php echo number_format($item['total_price'], 0, ',', '.'); ?>đ</span>
+                                    <span><?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?>đ</span>
                                 </div>
                             <?php endforeach; ?>
-                            
+
                             <hr>
-                            
+
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Tạm tính:</span>
                                 <span><?php echo number_format($cartTotal, 0, ',', '.'); ?>đ</span>
                             </div>
-                            
+
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Phí giao hàng:</span>
                                 <span class="text-success">Miễn phí</span>
                             </div>
-                            
+
                             <hr>
-                            
+
                             <div class="d-flex justify-content-between">
                                 <strong>Tổng cộng:</strong>
                                 <strong class="text-primary"><?php echo number_format($cartTotal, 0, ',', '.'); ?>đ</strong>
@@ -133,5 +135,8 @@
     ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+
 </body>
+
 </html>

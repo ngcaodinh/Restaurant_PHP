@@ -56,8 +56,8 @@ class OrderController extends BaseController
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
 
         $userId = $_SESSION['user_id'];
-        $cartItems = $this->cartModel->getCartItems($userId);
-        $cartTotal = $this->cartModel->getCartTotal($userId);
+        $cartItems = $this->cartModel->getCartContents();
+        $cartTotal = $this->cartModel->calculateSubtotal();
 
         if (empty($cartItems)) {
             $_SESSION['error_message'] = 'Giỏ hàng của bạn đang trống.';
@@ -78,8 +78,8 @@ class OrderController extends BaseController
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
 
         $userId = $_SESSION['user_id'];
-        $cartItems = $this->cartModel->getCartItems($userId);
-        $cartTotal = $this->cartModel->getCartTotal($userId);
+        $cartItems = $this->cartModel->getCartContents();
+        $cartTotal = $this->cartModel->calculateSubtotal();
 
         if (empty($cartItems)) {
             $_SESSION['error_message'] = 'Giỏ hàng của bạn đang trống.';

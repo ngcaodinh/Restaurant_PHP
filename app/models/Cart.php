@@ -5,7 +5,7 @@ namespace App\Models;
 use PDO;
 use Exception;
 
-class CartModel
+class Cart
 {
     private $db;
     private $user_id;
