@@ -69,7 +69,7 @@ $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
                             <?php endif; ?>
                             <a href="<?php echo BASE_URL . 'cart'; ?>"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
                             <a href="/Restaurant_PHP/checkout.php"><i class="fas fa-credit-card"></i> Thanh toán</a>
-                            <a href="/Restaurant_PHP/orders.php"><i class="fas fa-list-alt"></i> Đơn hàng</a>
+                            <a href="<?php echo BASE_URL; ?>purchase-history"><i class="fas fa-history"></i> Lịch sử mua hàng</a>
                             <hr>
                             <a href="/Restaurant_PHP/logout.php"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                         <?php else: ?>

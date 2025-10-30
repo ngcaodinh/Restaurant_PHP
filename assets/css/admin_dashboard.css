@@ -128,8 +128,13 @@ body {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .main-container {
@@ -232,9 +237,17 @@ body {
     box-shadow: var(--shadow-xl);
 }
 
-.stat-card:nth-child(2)::before { background: var(--secondary-gradient); }
-.stat-card:nth-child(3)::before { background: var(--success-gradient); }
-.stat-card:nth-child(4)::before { background: var(--warning-gradient); }
+.stat-card:nth-child(2)::before {
+    background: var(--secondary-gradient);
+}
+
+.stat-card:nth-child(3)::before {
+    background: var(--success-gradient);
+}
+
+.stat-card:nth-child(4)::before {
+    background: var(--warning-gradient);
+}
 
 .stat-header {
     display: flex;
@@ -255,9 +268,17 @@ body {
     background: var(--primary-gradient);
 }
 
-.stat-card:nth-child(2) .stat-icon { background: var(--secondary-gradient); }
-.stat-card:nth-child(3) .stat-icon { background: var(--success-gradient); }
-.stat-card:nth-child(4) .stat-icon { background: var(--warning-gradient); }
+.stat-card:nth-child(2) .stat-icon {
+    background: var(--secondary-gradient);
+}
+
+.stat-card:nth-child(3) .stat-icon {
+    background: var(--success-gradient);
+}
+
+.stat-card:nth-child(4) .stat-icon {
+    background: var(--warning-gradient);
+}
 
 .stat-value {
     font-size: 2.5rem;
@@ -287,6 +308,7 @@ body {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -345,7 +367,7 @@ body {
     transition: color var(--transition-fast);
 }
 
-.search-input:focus + .search-icon {
+.search-input:focus+.search-icon {
     color: var(--primary-color);
 }
 
@@ -501,14 +523,46 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-.table th:nth-child(1) { min-width: 200px; } /* Tên người dùng */
-.table th:nth-child(2) { min-width: 200px; } /* Email */
-.table th:nth-child(3) { min-width: 170px; } /* Số điện thoại */
-.table th:nth-child(4) { min-width: 120px; } /* Vai trò */
-.table th:nth-child(5) { min-width: 120px; } /* Trạng thái */
-.table th:nth-child(6) { min-width: 150px; } /* Đơn hàng */
-.table th:nth-child(7) { min-width: 170px; } /* Ngày đăng ký */
-.table th:nth-child(8) { min-width: 150px; } /* Thao tác */
+.table th:nth-child(1) {
+    min-width: 200px;
+}
+
+/* Tên người dùng */
+.table th:nth-child(2) {
+    min-width: 200px;
+}
+
+/* Email */
+.table th:nth-child(3) {
+    min-width: 170px;
+}
+
+/* Số điện thoại */
+.table th:nth-child(4) {
+    min-width: 120px;
+}
+
+/* Vai trò */
+.table th:nth-child(5) {
+    min-width: 120px;
+}
+
+/* Trạng thái */
+.table th:nth-child(6) {
+    min-width: 150px;
+}
+
+/* Đơn hàng */
+.table th:nth-child(7) {
+    min-width: 170px;
+}
+
+/* Ngày đăng ký */
+.table th:nth-child(8) {
+    min-width: 150px;
+}
+
+/* Thao tác */
 
 .sort-icon {
     margin-left: var(--space-sm);
@@ -729,16 +783,19 @@ body {
     transform: translateY(0);
     opacity: 1;
 }
+
 .modal .modal-content {
     transform: translateY(-50px);
     opacity: 0;
     transition: all 0.3s ease;
 }
+
 @keyframes slideIn {
     from {
         transform: translateY(-50px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -887,6 +944,7 @@ body {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1013,4 +1071,163 @@ body {
     font-size: 18px;
     color: #666;
     pointer-events: none;
+}
+
+/* Dashboard Specific Styles */
+.stat-trend {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--success-color);
+    font-size: 0.875rem;
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--border-color);
+}
+
+.stat-trend i {
+    font-size: 0.75rem;
+}
+
+.chart-container {
+    padding: var(--space-xl) var(--space-2xl);
+    min-height: 300px;
+    position: relative;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-lg);
+    padding: var(--space-xl) var(--space-2xl);
+}
+
+.quick-action-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left var(--transition-slow);
+}
+
+.quick-action-card:hover::before {
+    left: 100%;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+    border-color: transparent;
+}
+
+.quick-action-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.quick-action-info h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.quick-action-info p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Status Badge Variants */
+.status-pending {
+    background: rgba(251, 191, 36, 0.1);
+    color: #92400e;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.status-confirmed {
+    background: rgba(59, 130, 246, 0.1);
+    color: #1e40af;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.status-preparing {
+    background: rgba(168, 85, 247, 0.1);
+    color: #6b21a8;
+    border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.status-ready {
+    background: rgba(16, 185, 129, 0.1);
+    color: #065f46;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-delivered {
+    background: rgba(34, 197, 94, 0.1);
+    color: #166534;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-cancelled {
+    background: rgba(239, 68, 68, 0.1);
+    color: #991b1b;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Animation for stat cards */
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card {
+    animation: countUp 0.6s ease-out forwards;
+}
+
+.stat-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.stat-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.stat-card:nth-child(4) {
+    animation-delay: 0.4s;
 }

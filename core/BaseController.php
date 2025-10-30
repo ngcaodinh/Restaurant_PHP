@@ -1,4 +1,5 @@
 <?php
+
 namespace Core;
 
 class BaseController
@@ -15,4 +16,3 @@ class BaseController
         include $viewFile;
     }
 }
-

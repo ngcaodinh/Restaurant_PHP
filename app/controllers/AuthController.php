@@ -252,6 +252,75 @@ class AuthController extends BaseController
         exit();
     }
 
+
+    public function showAdminLogin(): void
+    {
+        // Redirect if already logged in as admin
+        if (isset($_SESSION['user_id']) && $_SESSION['user_role'] === 'Admin') {
+            header("Location: " . BASE_URL . 'admin/dashboard');
+            exit();
+        }
+
+        $errors = $_SESSION['admin_login_errors'] ?? [];
+        unset($_SESSION['admin_login_errors']);
+
+        $this->view('auth/admin_login', compact('errors'));
+    }
+
+    public function adminLogin(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /admin/login');
+            exit();
+        }
+
+        $emailOrPhone = $this->sanitizeInput(trim($_POST['email'] ?? ''));
+        $password = $_POST['password'] ?? '';
+        $errors = [];
+
+        if (empty($emailOrPhone)) {
+            $errors[] = 'Vui lòng nhập email hoặc số điện thoại';
+        }
+
+        if (empty($password)) {
+            $errors[] = 'Vui lòng nhập mật khẩu';
+        }
+
+        if (empty($errors)) {
+            try {
+                $user = $this->userModel->findByEmailOrPhone($emailOrPhone);
+
+                if ($user && password_verify($password, $user['password'])) {
+                    if ($user['role'] !== 'Admin') {
+                        $errors[] = 'Truy cập bị từ chối. Tài khoản không có quyền quản trị.';
+                    } elseif ($user['status'] != 'Active') {
+                        $errors[] = 'Tài khoản của bạn đã bị khóa.';
+                    } else {
+                        // Successful admin login
+                        session_regenerate_id(true);
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['user_name'] = $user['name'];
+                        $_SESSION['user_role'] = $user['role'];
+
+                        $this->userModel->updateLastLogin($user['id']);
+
+                        header('Location: ' . BASE_URL . 'admin/dashboard');
+                        exit();
+                    }
+                } else {
+                    $errors[] = 'Email/số điện thoại hoặc mật khẩu không đúng.';
+                }
+            } catch (\Exception $e) {
+                $errors[] = 'Đã xảy ra lỗi. Vui lòng thử lại sau.';
+                error_log("Admin login error: " . $e->getMessage());
+            }
+        }
+
+        $_SESSION['admin_login_errors'] = $errors;
+        header('Location: /admin/login');
+        exit();
+    }
+
     private function sanitizeInput(string $input): string
     {
         return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');

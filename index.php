@@ -11,6 +11,7 @@ use App\Controllers\OrderController;
 use App\Controllers\AdminController;
 use App\Controllers\SearchController;
 use App\Controllers\FavoritesController;
+use App\Controllers\PurchaseHistory;
 
 $router = new Router();
 
@@ -25,6 +26,10 @@ $router->get('/register', [AuthController::class, 'showRegister']);
 $router->post('/register', [AuthController::class, 'register']);
 $router->get('/logout', [AuthController::class, 'logout']);
 $router->post('/logout', [AuthController::class, 'logout']);
+
+// Admin login
+$router->get('/admin/login', [AuthController::class, 'showAdminLogin']);
+$router->post('/admin/login', [AuthController::class, 'adminLogin']);
 
 // User routes (preserve legacy URLs)
 $router->get('/user', [UserController::class, 'index']);
@@ -56,6 +61,10 @@ $router->post('/checkout', [OrderController::class, 'create']);
 $router->get('/order-confirmation', [OrderController::class, 'confirmation']); // with ?id parameter
 $router->post('/api/order/cancel', [OrderController::class, 'cancel']);
 $router->post('/api/order/update-status', [OrderController::class, 'updateStatus']);
+
+// Purchase History routes
+$router->get('/purchase-history', [PurchaseHistory::class, 'index']);
+
 
 // Admin routes
 $router->get('/admin', [AdminController::class, 'dashboard']);

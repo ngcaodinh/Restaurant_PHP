@@ -161,7 +161,7 @@ class Order
             SELECT 
                 o.id,
                 o.user_id,
-                o.total_amount,
+                o.total_price as total_amount,
                 o.status,
                 o.delivery_address,
                 o.phone,
@@ -200,7 +200,7 @@ class Order
         }
 
         // Total revenue
-        $stmt = $this->db->prepare("SELECT SUM(total_amount) as revenue FROM orders WHERE status != 'Cancelled'");
+        $stmt = $this->db->prepare("SELECT SUM(total_price) as revenue FROM orders WHERE status != 'Cancelled'");
         $stmt->execute();
         $stats['total_revenue'] = $stmt->fetch(PDO::FETCH_ASSOC)['revenue'] ?? 0;
 

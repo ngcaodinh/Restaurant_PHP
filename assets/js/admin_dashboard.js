@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Initialize Charts
+    initializeCharts();
+
+    // Animate stat cards
+    animateStatCards();
+
     // Toggle hamburger menu
     const hamburger = document.querySelector('.hamburger');
     if (hamburger) {
@@ -47,29 +53,29 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-window.editCustomer = function(id) {
-    fetch(`admin_dashboard.php?action=get_user&id=${id}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('modalTitle').textContent = 'Chỉnh sửa thông tin người dùng';
-                document.getElementById('formAction').value = 'edit';
-                document.getElementById('customerId').value = data.user.id;
-                document.getElementById('customerName').value = data.user.name || '';
-                document.getElementById('customerEmail').value = data.user.email || '';
-                document.getElementById('customerPhone').value = data.user.phone || '';
-                document.getElementById('customerAddress').value = data.user.address || '';
-                document.getElementById('customerRole').value = data.user.role;
-                document.getElementById('customerStatus').value = data.user.status;
-                document.getElementById('customerPassword').value = ''; // Không điền mật khẩu hiện tại
-                document.getElementById('customerPassword').removeAttribute('required'); // Xóa thuộc tính required
-                document.getElementById('customerModal').classList.add('show');
-            } else {
-                showNotification(data.message, 'error');
-            }
-        })
-        .catch(() => showNotification('Lỗi khi lấy thông tin người dùng', 'error'));
-};
+    window.editCustomer = function (id) {
+        fetch(`admin_dashboard.php?action=get_user&id=${id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('modalTitle').textContent = 'Chỉnh sửa thông tin người dùng';
+                    document.getElementById('formAction').value = 'edit';
+                    document.getElementById('customerId').value = data.user.id;
+                    document.getElementById('customerName').value = data.user.name || '';
+                    document.getElementById('customerEmail').value = data.user.email || '';
+                    document.getElementById('customerPhone').value = data.user.phone || '';
+                    document.getElementById('customerAddress').value = data.user.address || '';
+                    document.getElementById('customerRole').value = data.user.role;
+                    document.getElementById('customerStatus').value = data.user.status;
+                    document.getElementById('customerPassword').value = ''; // Không điền mật khẩu hiện tại
+                    document.getElementById('customerPassword').removeAttribute('required'); // Xóa thuộc tính required
+                    document.getElementById('customerModal').classList.add('show');
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(() => showNotification('Lỗi khi lấy thông tin người dùng', 'error'));
+    };
 
     window.deleteCustomer = function (id) {
         if (confirm('Bạn có chắc chắn muốn xóa người dùng này?\nHành động này không thể hoàn tác.')) {
@@ -254,3 +260,204 @@ window.editCustomer = function (id) {
         })
         .catch(() => showNotification('Lỗi khi lấy thông tin người dùng', 'error'));
 };
+
+// Initialize Charts
+function initializeCharts() {
+    // Revenue Chart
+    const revenueChartCanvas = document.getElementById('revenueChart');
+    if (revenueChartCanvas) {
+        const revenueCtx = revenueChartCanvas.getContext('2d');
+        const revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+                datasets: [{
+                    label: 'Doanh thu (triệu đồng)',
+                    data: [12, 19, 15, 25, 22, 30, 28, 35, 32, 38, 42, 45],
+                    borderColor: 'rgb(102, 126, 234)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: 'rgb(102, 126, 234)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 12,
+                                family: "'Inter', sans-serif"
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        borderColor: 'rgba(102, 126, 234, 0.5)',
+                        borderWidth: 1,
+                        displayColors: false,
+                        callbacks: {
+                            label: function (context) {
+                                return context.parsed.y + ' triệu đồng';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            },
+                            callback: function (value) {
+                                return value + 'M';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+    }
+
+    // Order Status Chart
+    const orderStatusChartCanvas = document.getElementById('orderStatusChart');
+    if (orderStatusChartCanvas) {
+        const orderStatusCtx = orderStatusChartCanvas.getContext('2d');
+        const orderStatusChart = new Chart(orderStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Đã giao', 'Đang chuẩn bị', 'Chờ xác nhận', 'Đã hủy'],
+                datasets: [{
+                    data: [45, 25, 20, 10],
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(168, 85, 247, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(34, 197, 94)',
+                        'rgb(168, 85, 247)',
+                        'rgb(251, 191, 36)',
+                        'rgb(239, 68, 68)'
+                    ],
+                    borderWidth: 2,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 11,
+                                family: "'Inter', sans-serif"
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return label + ': ' + value + ' đơn (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Animate Stat Cards
+function animateStatCards() {
+    const statCards = document.querySelectorAll('.stat-card');
+
+    statCards.forEach((card, index) => {
+        const valueElement = card.querySelector('.stat-value');
+        if (valueElement) {
+            const finalValue = valueElement.textContent.replace(/[^\d]/g, '');
+            if (finalValue) {
+                animateValue(valueElement, 0, parseInt(finalValue), 1500, index * 100);
+            }
+        }
+    });
+}
+
+// Animate number counting
+function animateValue(element, start, end, duration, delay) {
+    setTimeout(() => {
+        const range = end - start;
+        const increment = range / (duration / 16);
+        let current = start;
+        const originalText = element.textContent;
+        const suffix = originalText.replace(/[\d,\.]/g, '');
+
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= end) {
+                current = end;
+                clearInterval(timer);
+            }
+
+            if (suffix.includes('đ')) {
+                element.textContent = Math.floor(current).toLocaleString('vi-VN') + 'đ';
+            } else {
+                element.textContent = Math.floor(current).toLocaleString('vi-VN');
+            }
+        }, 16);
+    }, delay);
+}
