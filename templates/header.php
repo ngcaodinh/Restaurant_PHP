@@ -59,7 +59,7 @@ $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
                     <i class="nav-icon fas fa-user"></i>
                     <div class="user-menu" id="userMenu">
                         <?php if (is_logged_in()): ?>
-                            <a href="/Restaurant_PHP/my_orders.php"><i class="fas fa-user-circle"></i> Hồ sơ (<?php echo htmlspecialchars($user_name); ?>)</a>
+                            <a href="<?php echo BASE_URL; ?>user/profile"><i class="fas fa-user-circle"></i> Hồ sơ (<?php echo htmlspecialchars($user_name); ?>)</a>
                             <?php if (is_admin()): ?>
                                 <a href="/Restaurant_PHP/admin_dashboard.php"><i class="fas fa-cog"></i> Bảng điều khiển Quản trị</a>
                                 <a href="/Restaurant_PHP/admin_users.php"><i class="fas fa-users"></i> Quản lý người dùng</a>

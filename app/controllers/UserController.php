@@ -56,9 +56,11 @@ class UserController extends BaseController
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
 
         $userId = $_SESSION['user_id'];
+
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
+        $address = trim($_POST['address'] ?? '');
         $errors = [];
 
         // Validate input
@@ -70,7 +72,6 @@ class UserController extends BaseController
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $errors[] = 'Email không đúng định dạng';
             } else {
-                // Check if email is already used by another user
                 $existingUser = $this->userModel->findByEmail($email);
                 if ($existingUser && $existingUser['id'] != $userId) {
                     $errors[] = 'Email đã được sử dụng bởi tài khoản khác';
@@ -82,36 +83,36 @@ class UserController extends BaseController
             if (!preg_match('/^(\+84|84|0)[3-9][0-9]{8}$/', $phone)) {
                 $errors[] = 'Số điện thoại không đúng định dạng';
             } else {
-                $normalizedPhone = preg_replace('/^(\+84|84)/', '0', $phone);
-                $existingUser = $this->userModel->findByPhone($normalizedPhone);
+                $phone = preg_replace('/^(\+84|84)/', '0', $phone);
+                $existingUser = $this->userModel->findByPhone($phone);
                 if ($existingUser && $existingUser['id'] != $userId) {
                     $errors[] = 'Số điện thoại đã được sử dụng bởi tài khoản khác';
                 }
-                $phone = $normalizedPhone;
             }
         }
 
-        if (!empty($errors)) {
-            $_SESSION['profile_errors'] = $errors;
-            header('Location: /user/profile');
-            exit();
-        }
-
-        // Update profile
         $updateData = [
             'name' => $name,
             'email' => $email ?: null,
-            'phone' => $phone ?: null
+            'phone' => $phone ?: null,
+            'address' => $address ?: null,
         ];
 
-        if ($this->userModel->update($userId, $updateData)) {
-            $_SESSION['user_name'] = $name; // Update session
-            $_SESSION['profile_success'] = 'Cập nhật thông tin thành công';
-        } else {
-            $_SESSION['profile_errors'] = ['Có lỗi xảy ra khi cập nhật thông tin'];
+        if (!empty($errors)) {
+            $_SESSION['profile_errors'] = $errors;
+            header('Location: ' . BASE_URL . 'user/profile');
+            exit();
         }
 
-        header('Location: /user/profile');
+        // We only update text fields here. Avatar is handled by a separate AJAX endpoint.
+        if ($this->userModel->update($userId, $updateData)) {
+            $_SESSION['user_name'] = $name;
+            $_SESSION['profile_success'] = 'Cập nhật thông tin thành công';
+        } else {
+            $_SESSION['profile_success'] = 'Không có thông tin nào được thay đổi.';
+        }
+
+        header('Location: ' . BASE_URL . 'user/profile');
         exit();
     }
 

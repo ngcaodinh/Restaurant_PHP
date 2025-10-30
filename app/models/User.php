@@ -81,8 +81,8 @@ class User
             $fields = [];
             $values = [];
 
-            foreach (['name', 'email', 'phone', 'role', 'status'] as $field) {
-                if (isset($data[$field])) {
+            foreach (['name', 'email', 'phone', 'address', 'avatar_url', 'role', 'status'] as $field) {
+                if (array_key_exists($field, $data)) {
                     $fields[] = "$field = ?";
                     $values[] = $data[$field];
                 }
