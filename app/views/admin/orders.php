@@ -1,151 +1,225 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTUT Restaurant - Quản lý đơn hàng</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/header.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Quản lý Đơn hàng - Admin</title>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
+    <link href="<?php echo BASE_URL; ?>assets/css/material-dashboard/nucleo-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link id="pagestyle" href="<?php echo BASE_URL; ?>assets/css/material-dashboard/material-dashboard.min.css" rel="stylesheet" />
 </head>
-<body>
-    <?php
-    $headerPath = dirname(dirname(dirname(__DIR__))) . '/templates/header.php';
-    if (file_exists($headerPath)) {
-        require_once $headerPath;
-    }
-    ?>
 
-    <div class="container-fluid mt-4">
-        <div class="row">
-            <div class="col-md-2">
-                <?php
-                $sidebarPath = dirname(dirname(dirname(__DIR__))) . '/templates/sidebar_admin.php';
-                if (file_exists($sidebarPath)) {
-                    include $sidebarPath;
-                }
-                ?>
+<body class="g-sidenav-show bg-gray-100">
+    <?php require_once 'app/views/admin/sidebar.php'; ?>
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+        <!-- Navbar -->
+        <nav class="navbar navbar-main navbar-expand-lg px-0 mx-3 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
+            <div class="container-fluid py-1 px-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+                        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="/admin/dashboard">Admin</a></li>
+                        <li class="breadcrumb-item text-sm text-dark active" aria-current="page">Đơn hàng</li>
+                    </ol>
+                    <h6 class="font-weight-bolder mb-0">Quản lý Đơn hàng</h6>
+                </nav>
             </div>
-            <div class="col-md-10">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="fas fa-shopping-cart"></i> Quản lý đơn hàng</h2>
-                    <div>
-                        <span class="badge bg-primary">Tổng: <?php echo $orderStats['total_orders'] ?? 0; ?></span>
-                        <span class="badge bg-success">Doanh thu: <?php echo number_format($orderStats['total_revenue'] ?? 0, 0, ',', '.'); ?>đ</span>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Khách hàng</th>
-                                        <th>Email</th>
-                                        <th>Tổng tiền</th>
-                                        <th>Trạng thái</th>
-                                        <th>Ngày đặt</th>
-                                        <th>Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($orders as $order): ?>
-                                    <tr>
-                                        <td>#<?php echo $order['id']; ?></td>
-                                        <td><?php echo htmlspecialchars($order['user_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($order['user_email']); ?></td>
-                                        <td><?php echo number_format($order['total_amount'], 0, ',', '.'); ?>đ</td>
-                                        <td>
-                                            <select class="form-select form-select-sm" onchange="updateOrderStatus(<?php echo $order['id']; ?>, this.value)">
-                                                <option value="Pending" <?php echo $order['status'] === 'Pending' ? 'selected' : ''; ?>>Chờ xác nhận</option>
-                                                <option value="Confirmed" <?php echo $order['status'] === 'Confirmed' ? 'selected' : ''; ?>>Đã xác nhận</option>
-                                                <option value="Preparing" <?php echo $order['status'] === 'Preparing' ? 'selected' : ''; ?>>Đang chuẩn bị</option>
-                                                <option value="Ready" <?php echo $order['status'] === 'Ready' ? 'selected' : ''; ?>>Sẵn sàng</option>
-                                                <option value="Delivered" <?php echo $order['status'] === 'Delivered' ? 'selected' : ''; ?>>Đã giao</option>
-                                                <option value="Cancelled" <?php echo $order['status'] === 'Cancelled' ? 'selected' : ''; ?>>Đã hủy</option>
-                                            </select>
-                                        </td>
-                                        <td><?php echo date('d/m/Y H:i', strtotime($order['created_at'])); ?></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails(<?php echo $order['id']; ?>)">
-                                                <i class="fas fa-eye"></i> Chi tiết
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+        </nav>
+        <!-- End Navbar -->
+        <div class="container-fluid py-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card my-4">
+                        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                            <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
+                                <h6 class="text-white text-capitalize ps-3">Danh sách đơn hàng</h6>
+                            </div>
+                        </div>
+                        <div class="card-body px-0 pb-2">
+                            <div class="table-responsive p-0">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Khách hàng</th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tổng tiền</th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày đặt</th>
+                                            <th class="text-secondary opacity-7"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($orders as $order): ?>
+                                            <tr>
+                                                <td>
+                                                    <p class="text-xs font-weight-bold mb-0 px-3">#<?php echo $order['id']; ?></p>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex flex-column justify-content-center">
+                                                        <h6 class="mb-0 text-sm"><?php echo htmlspecialchars($order['user_name']); ?></h6>
+                                                        <p class="text-xs text-secondary mb-0"><?php echo htmlspecialchars($order['user_email']); ?></p>
+                                                    </div>
+                                                </td>
+                                                <td class="align-middle text-center text-sm"><span class="text-secondary text-xs font-weight-bold"><?php echo number_format($order['total_amount'], 0, ',', '.'); ?>đ</span></td>
+                                                <td class="align-middle text-center">
+                                                    <select class="form-select form-select-sm status-select"
+                                                        data-order-id="<?php echo $order['id']; ?>"
+                                                        data-current-status="<?php echo $order['status']; ?>">
+                                                        <option value="Pending" <?php echo $order['status'] == 'Pending' ? 'selected' : ''; ?>>Chờ xác nhận</option>
+                                                        <option value="Confirmed" <?php echo $order['status'] == 'Confirmed' ? 'selected' : ''; ?>>Đã xác nhận</option>
+                                                        <option value="Processing" <?php echo $order['status'] == 'Processing' ? 'selected' : ''; ?>>Đang xử lý</option>
+                                                        <option value="Shipped" <?php echo $order['status'] == 'Shipped' ? 'selected' : ''; ?>>Đang giao</option>
+                                                        <option value="Delivered" <?php echo $order['status'] == 'Delivered' ? 'selected' : ''; ?>>Đã giao</option>
+                                                        <option value="Cancelled" <?php echo $order['status'] == 'Cancelled' ? 'selected' : ''; ?>>Đã hủy</option>
+                                                        <option value="Refunded" <?php echo $order['status'] == 'Refunded' ? 'selected' : ''; ?>>Đã hoàn tiền</option>
+                                                    </select>
+                                                </td>
+                                                <td class="align-middle text-center"><span class="text-secondary text-xs font-weight-bold"><?php echo date('d/m/Y H:i', strtotime($order['created_at'])); ?></span></td>
+                                                <td class="align-middle">
+                                                    <a href="<?php echo BASE_URL; ?>order?id=<?php echo $order['id']; ?>" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Xem chi tiết">
+                                                        Xem
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex justify-content-end">
+                            <!-- Pagination will be added here -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Order Details Modal -->
-    <div class="modal fade" id="orderDetailsModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Chi tiết đơn hàng</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="confirmationModalLabel">Xác nhận thay đổi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="orderDetailsContent">
-                    <!-- Content will be loaded here -->
+                <div class="modal-body" id="confirmationModalBody">
+                    <!-- Confirmation message will be injected here -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="confirmChangeBtn">Xác nhận</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <?php
-    $footerPath = dirname(dirname(dirname(__DIR__))) . '/templates/footer.php';
-    if (file_exists($footerPath)) {
-        require_once $footerPath;
-    }
-    ?>
+    <!-- Toast Notification -->
+    <div class="position-fixed top-3 end-3 p-3" style="z-index: 1100">
+        <div id="successToast" class="toast hide bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white border-0">
+                <i class="material-symbols-rounded me-2">check_circle</i>
+                <strong class="me-auto">Thành công</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                Cập nhật trạng thái thành công!
+            </div>
+        </div>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/core/popper.min.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/core/bootstrap.min.js"></script>
     <script>
-        function updateOrderStatus(orderId, status) {
-            const formData = new FormData();
-            formData.append('order_id', orderId);
-            formData.append('status', status);
-            
-            fetch('/api/order/update-status', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success message briefly
-                    const originalText = event.target.parentElement.innerHTML;
-                    event.target.parentElement.innerHTML = '<span class="text-success">Đã cập nhật!</span>';
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    alert(data.message);
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra');
-                location.reload();
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            const successToast = new bootstrap.Toast(document.getElementById('successToast'), {
+                delay: 5000
             });
-        }
+            const confirmBtn = document.getElementById('confirmChangeBtn');
+            const confirmationModalBody = document.getElementById('confirmationModalBody');
+            let activeSelect = null;
 
-        function viewOrderDetails(orderId) {
-            // For now, redirect to order details page
-            window.open('/order?id=' + orderId, '_blank');
-        }
+            const validTransitions = {
+                'Pending': ['Confirmed', 'Cancelled'],
+                'Confirmed': ['Processing', 'Cancelled'],
+                'Processing': ['Shipped'],
+                'Shipped': ['Delivered'],
+                'Delivered': [],
+                'Cancelled': [],
+                'Refunded': []
+            };
+
+            document.querySelectorAll('.status-select').forEach(select => {
+                const currentStatus = select.dataset.currentStatus;
+                const finalStates = ['Delivered', 'Cancelled', 'Refunded'];
+
+                if (finalStates.includes(currentStatus)) {
+                    select.disabled = true;
+                }
+
+                Array.from(select.options).forEach(option => {
+                    if (option.value !== currentStatus && (!validTransitions[currentStatus] || !validTransitions[currentStatus].includes(option.value))) {
+                        option.disabled = true;
+                    }
+                });
+
+                select.addEventListener('change', function(event) {
+                    activeSelect = event.target;
+                    const orderId = activeSelect.dataset.orderId;
+                    const newStatus = activeSelect.value;
+                    const oldStatusText = activeSelect.querySelector(`option[value="${currentStatus}"]`).textContent;
+                    const newStatusText = activeSelect.querySelector(`option[value="${newStatus}"]`).textContent;
+
+                    confirmationModalBody.textContent = `Bạn có chắc muốn đổi trạng thái đơn hàng #${orderId} từ '${oldStatusText}' sang '${newStatusText}'?`;
+                    confirmationModal.show();
+                });
+            });
+
+            confirmBtn.addEventListener('click', function() {
+                if (!activeSelect) return;
+
+                const orderId = activeSelect.dataset.orderId;
+                const newStatus = activeSelect.value;
+                const currentStatus = activeSelect.dataset.currentStatus;
+
+                fetch('<?php echo BASE_URL; ?>api/order/update-status', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `order_id=${orderId}&status=${newStatus}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        confirmationModal.hide();
+                        if (data.success) {
+                            successToast.show();
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái.'));
+                            activeSelect.value = currentStatus; // Revert on failure
+                        }
+                    })
+                    .catch(error => {
+                        confirmationModal.hide();
+                        console.error('Error:', error);
+                        alert('Có lỗi xảy ra khi kết nối đến máy chủ.');
+                        activeSelect.value = currentStatus; // Revert on error
+                    });
+            });
+
+            // Reset select if modal is cancelled
+            document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', function() {
+                if (activeSelect) {
+                    activeSelect.value = activeSelect.dataset.currentStatus;
+                }
+            });
+        });
     </script>
 </body>
+
 </html>

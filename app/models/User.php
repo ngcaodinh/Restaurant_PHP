@@ -164,6 +164,23 @@ class User
         $stmt->execute();
         $stats['active_users'] = $stmt->fetch(PDO::FETCH_ASSOC)['active'];
 
+        // New users this month
+        $stmt = $this->db->prepare("SELECT COUNT(*) as new_this_month FROM users WHERE deleted_at IS NULL AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')");
+        $stmt->execute();
+        $newThisMonth = $stmt->fetch(PDO::FETCH_ASSOC)['new_this_month'];
+
+        // New users last month
+        $stmt = $this->db->prepare("SELECT COUNT(*) as new_last_month FROM users WHERE deleted_at IS NULL AND created_at >= DATE_FORMAT(NOW() - INTERVAL 1 MONTH, '%Y-%m-01') AND created_at < DATE_FORMAT(NOW(), '%Y-%m-01')");
+        $stmt->execute();
+        $newLastMonth = $stmt->fetch(PDO::FETCH_ASSOC)['new_last_month'];
+
+        // Growth percentage
+        if ($newLastMonth > 0) {
+            $stats['user_growth'] = (($newThisMonth - $newLastMonth) / $newLastMonth) * 100;
+        } else {
+            $stats['user_growth'] = $newThisMonth > 0 ? 100 : 0;
+        }
+
         return $stats;
     }
 

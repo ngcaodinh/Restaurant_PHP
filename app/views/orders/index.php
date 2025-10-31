@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/header.css">
 </head>
+
 <body>
     <?php
     $headerPath = dirname(dirname(dirname(__DIR__))) . '/templates/header.php';
@@ -54,22 +56,24 @@
                                     </div>
                                     <div>
                                         <?php
-                                        $statusClass = match($order['status']) {
+                                        $statusClass = match ($order['status']) {
                                             'Pending' => 'warning',
-                                            'Confirmed' => 'info',
-                                            'Preparing' => 'primary',
-                                            'Ready' => 'success',
+                                            'Confirmed' => 'primary',
+                                            'Processing' => 'info',
+                                            'Shipped' => 'info',
                                             'Delivered' => 'success',
                                             'Cancelled' => 'danger',
+                                            'Refunded' => 'dark',
                                             default => 'secondary'
                                         };
-                                        $statusText = match($order['status']) {
+                                        $statusText = match ($order['status']) {
                                             'Pending' => 'Chờ xác nhận',
                                             'Confirmed' => 'Đã xác nhận',
-                                            'Preparing' => 'Đang chuẩn bị',
-                                            'Ready' => 'Sẵn sàng',
+                                            'Processing' => 'Đang xử lý',
+                                            'Shipped' => 'Đang giao hàng',
                                             'Delivered' => 'Đã giao',
                                             'Cancelled' => 'Đã hủy',
+                                            'Refunded' => 'Đã hoàn tiền',
                                             default => $order['status']
                                         };
                                         ?>
@@ -123,28 +127,29 @@
     <script>
         function cancelOrder(orderId) {
             if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
-            
+
             fetch('/api/order/cancel', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `order_id=${orderId}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra');
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `order_id=${orderId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra');
+                });
         }
     </script>
 </body>
+
 </html>

@@ -71,6 +71,7 @@ $router->get('/admin', [AdminController::class, 'dashboard']);
 $router->get('/admin/dashboard', [AdminController::class, 'dashboard']);
 $router->get('/admin/users', [AdminController::class, 'users']);
 $router->get('/admin/dishes', [AdminController::class, 'dishes']);
+$router->get('/admin/manage_dishes', [AdminController::class, 'dishes']); // Alias for clarity
 $router->get('/admin/orders', [AdminController::class, 'orders']);
 $router->post('/api/admin/dish/create', [AdminController::class, 'createDish']);
 $router->post('/api/admin/dish/update', [AdminController::class, 'updateDish']);
@@ -95,7 +96,7 @@ $router->get('/order_confirmation.php', [OrderController::class, 'confirmation']
 $router->get('/favorites.php', [FavoritesController::class, 'index']);
 $router->get('/admin_dashboard.php', [AdminController::class, 'dashboard']);
 $router->get('/admin_users.php', [AdminController::class, 'users']);
-$router->get('/dish_manage.php', [AdminController::class, 'dishes']);
+
 
 // Dispatch - Router also includes legacy .php files when no route matches
 $router->dispatch();

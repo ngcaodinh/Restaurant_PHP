@@ -189,6 +189,11 @@ class Dish
         $stmt->execute();
         $stats['best_sellers'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // New dishes this month
+        $stmt = $this->db->prepare("SELECT COUNT(*) as new_this_month FROM dishes WHERE deleted_at IS NULL AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')");
+        $stmt->execute();
+        $stats['new_dishes_this_month'] = $stmt->fetch(PDO::FETCH_ASSOC)['new_this_month'];
+
         return $stats;
     }
 }

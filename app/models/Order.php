@@ -37,7 +37,7 @@ class Order
 
             foreach ($cartItems as $item) {
                 $stmt = $this->db->prepare("
-                    INSERT INTO order_items (order_id, dish_id, quantity, price, created_at, updated_at) 
+                    INSERT INTO order_items (order_id, dish_id, quantity, price, created_at, updated_at)
                     VALUES (?, ?, ?, ?, NOW(), NOW())
                 ");
                 $stmt->execute([
@@ -66,7 +66,7 @@ class Order
     public function getUserOrders(int $userId): array
     {
         $stmt = $this->db->prepare("
-            SELECT 
+            SELECT
                 o.id,
                 o.total_amount,
                 o.status,
@@ -89,7 +89,7 @@ class Order
     public function getOrderDetails(int $orderId, ?int $userId = null): ?array
     {
         $sql = "
-            SELECT 
+            SELECT
                 o.id,
                 o.user_id,
                                 o.total_price,
@@ -122,7 +122,7 @@ class Order
 
         // Get order items
         $stmt = $this->db->prepare("
-            SELECT 
+            SELECT
                 oi.dish_id,
                 oi.quantity,
                 oi.price,
@@ -138,17 +138,33 @@ class Order
         return $order;
     }
 
-    public function updateOrderStatus(int $orderId, string $status): bool
+    public function updateOrderStatus(int $orderId, string $newStatus): bool
     {
         try {
-            $validStatuses = ['Pending', 'Confirmed', 'Preparing', 'Ready', 'Delivered', 'Cancelled'];
-            if (!in_array($status, $validStatuses)) {
-                return false;
+            $stmt = $this->db->prepare("SELECT status FROM orders WHERE id = ?");
+            $stmt->execute([$orderId]);
+            $currentStatus = $stmt->fetchColumn();
+
+            if (!$currentStatus) {
+                return false; // Order not found
+            }
+
+            $validTransitions = [
+                'Pending' => ['Confirmed', 'Cancelled'],
+                'Confirmed' => ['Processing', 'Cancelled'],
+                'Processing' => ['Shipped'],
+                'Shipped' => ['Delivered'],
+                'Delivered' => [], // Final state
+                'Cancelled' => [], // Final state
+                'Refunded' => []  // Final state
+            ];
+
+            if (!in_array($newStatus, $validTransitions[$currentStatus] ?? [])) {
+                return false; // Invalid transition
             }
 
             $stmt = $this->db->prepare("UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?");
-            $stmt->execute([$status, $orderId]);
-            return true;
+            return $stmt->execute([$newStatus, $orderId]);
         } catch (\Exception $e) {
             error_log("Order status update error: " . $e->getMessage());
             return false;
@@ -158,7 +174,7 @@ class Order
     public function getAllOrders(int $limit = 50, int $offset = 0): array
     {
         $stmt = $this->db->prepare("
-            SELECT 
+            SELECT
                 o.id,
                 o.user_id,
                 o.total_price as total_amount,
@@ -209,15 +225,58 @@ class Order
         $stmt->execute();
         $stats['today_orders'] = $stmt->fetch(PDO::FETCH_ASSOC)['today'];
 
+        // Order growth (vs last week)
+        $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM orders WHERE YEARWEEK(created_at, 1) = YEARWEEK(NOW(), 1)");
+        $stmt->execute();
+        $ordersThisWeek = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM orders WHERE YEARWEEK(created_at, 1) = YEARWEEK(NOW() - INTERVAL 1 WEEK, 1)");
+        $stmt->execute();
+        $ordersLastWeek = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        $stats['order_growth_weekly'] = ($ordersLastWeek > 0) ? (($ordersThisWeek - $ordersLastWeek) / $ordersLastWeek) * 100 : ($ordersThisWeek > 0 ? 100 : 0);
+
+        // Revenue growth (vs last month)
+        $stmt = $this->db->prepare("SELECT SUM(total_price) as revenue FROM orders WHERE status != 'Cancelled' AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')");
+        $stmt->execute();
+        $revenueThisMonth = $stmt->fetch(PDO::FETCH_ASSOC)['revenue'] ?? 0;
+        $stmt = $this->db->prepare("SELECT SUM(total_price) as revenue FROM orders WHERE status != 'Cancelled' AND created_at >= DATE_FORMAT(NOW() - INTERVAL 1 MONTH, '%Y-%m-01') AND created_at < DATE_FORMAT(NOW(), '%Y-%m-01')");
+        $stmt->execute();
+        $revenueLastMonth = $stmt->fetch(PDO::FETCH_ASSOC)['revenue'] ?? 0;
+        $stats['revenue_growth_monthly'] = ($revenueLastMonth > 0) ? (($revenueThisMonth - $revenueLastMonth) / $revenueLastMonth) * 100 : ($revenueThisMonth > 0 ? 100 : 0);
+
+        // Revenue growth (vs yesterday for chart subtitle)
+        $stmt = $this->db->prepare("SELECT SUM(total_price) as revenue FROM orders WHERE status != 'Cancelled' AND DATE(created_at) = CURDATE()");
+        $stmt->execute();
+        $revenueToday = $stmt->fetch(PDO::FETCH_ASSOC)['revenue'] ?? 0;
+        $stmt = $this->db->prepare("SELECT SUM(total_price) as revenue FROM orders WHERE status != 'Cancelled' AND DATE(created_at) = CURDATE() - INTERVAL 1 DAY");
+        $stmt->execute();
+        $revenueYesterday = $stmt->fetch(PDO::FETCH_ASSOC)['revenue'] ?? 0;
+        $stats['revenue_growth_daily'] = ($revenueYesterday > 0) ? (($revenueToday - $revenueYesterday) / $revenueYesterday) * 100 : ($revenueToday > 0 ? 100 : 0);
+
         return $stats;
+    }
+
+
+    public function getMonthlyRevenue(): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                DATE_FORMAT(created_at, '%Y-%m') as month,
+                SUM(total_price) as revenue
+            FROM orders
+            WHERE status = 'Delivered'
+            GROUP BY month
+            ORDER BY month ASC
+        ");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function cancelOrder(int $orderId, int $userId): bool
     {
         try {
             $stmt = $this->db->prepare("
-                UPDATE orders 
-                SET status = 'Cancelled', updated_at = NOW() 
+                UPDATE orders
+                SET status = 'Cancelled', updated_at = NOW()
                 WHERE id = ? AND user_id = ? AND status IN ('Pending', 'Confirmed')
             ");
             $stmt->execute([$orderId, $userId]);
