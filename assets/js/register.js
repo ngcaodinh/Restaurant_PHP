@@ -1,4 +1,9 @@
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * Tệp JavaScript xử lý trang đăng ký
+ * Xử lý validation form, kiểm tra độ mạnh mật khẩu, và đăng ký Google
+ */
+
+document.addEventListener('DOMContentLoaded', function () {
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
     const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
@@ -20,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailInput = document.getElementById('email');
     const googleBtn = document.getElementById('googleBtn');
 
+    /** Xử lý hiển thị/ẩn mật khẩu */
     togglePassword.addEventListener('click', function () {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
@@ -27,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.classList.toggle('fa-eye-slash');
     });
 
+    /** Xử lý hiển thị/ẩn xác nhận mật khẩu */
     toggleConfirmPassword.addEventListener('click', function () {
         const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         confirmPasswordInput.setAttribute('type', type);
@@ -34,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.classList.toggle('fa-eye-slash');
     });
 
+    /** Hàm debounce để giảm số lần gọi hàm */
     function debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -44,8 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
-    }   
+    }
 
+    /** Tính toán độ mạnh của mật khẩu */
     function calculatePasswordStrength(password) {
         let score = 0;
         const checks = {
@@ -165,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const inputs = document.querySelectorAll('.form-input');
     inputs.forEach(input => {
-        input.addEventListener('focus', function() {
+        input.addEventListener('focus', function () {
             errorMessage.classList.remove('show');
             successMessage.classList.remove('show');
             errorMessage.style.display = 'none';

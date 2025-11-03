@@ -67,7 +67,18 @@ class AdminController extends BaseController
         $limit = 20;
         $offset = ($page - 1) * $limit;
 
-        $dishes = $this->dishModel->getAllDishes($limit, $offset);
+        $filters = [];
+        $search = trim($_GET['search'] ?? '');
+        $category_id = filter_input(INPUT_GET, 'category', FILTER_VALIDATE_INT);
+
+        if (!empty($search)) {
+            $filters['search'] = $search;
+        }
+        if ($category_id) {
+            $filters['category_id'] = $category_id;
+        }
+
+        $dishes = $this->dishModel->getAllDishes($limit, $offset, $filters);
         $categories = $this->categoryModel->getAllCategories();
         $dishStats = $this->dishModel->getDishStats();
 
@@ -86,6 +97,27 @@ class AdminController extends BaseController
         $orderStats = $this->orderModel->getOrderStats();
 
         $this->view('admin/orders', compact('orders', 'orderStats', 'page'));
+    }
+
+    public function getOrderDetails(): void
+    {
+        $this->checkAdminAuth();
+
+        $orderId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+        if (!$orderId) {
+            $this->jsonResponse(['success' => false, 'message' => 'ID đơn hàng không hợp lệ']);
+            return;
+        }
+
+        $orderDetails = $this->orderModel->getOrderDetails($orderId);
+
+        if (!$orderDetails) {
+            $this->jsonResponse(['success' => false, 'message' => 'Không tìm thấy đơn hàng']);
+            return;
+        }
+
+        $this->jsonResponse(['success' => true, 'data' => $orderDetails]);
     }
 
     public function createDish(): void
@@ -212,6 +244,7 @@ class AdminController extends BaseController
         $phone = trim($_POST['phone'] ?? '');
         $role = trim($_POST['role'] ?? '');
         $status = trim($_POST['status'] ?? '');
+        $password = trim($_POST['password'] ?? '');
 
         if (!$userId) {
             $this->jsonResponse(['success' => false, 'message' => 'ID người dùng không hợp lệ']);
@@ -224,6 +257,7 @@ class AdminController extends BaseController
         if (!empty($phone)) $userData['phone'] = $phone;
         if (!empty($role)) $userData['role'] = $role;
         if (!empty($status)) $userData['status'] = $status;
+        if (!empty($password)) $userData['password'] = $password;
 
         if ($this->userModel->update($userId, $userData)) {
             $this->jsonResponse(['success' => true, 'message' => 'Cập nhật người dùng thành công']);

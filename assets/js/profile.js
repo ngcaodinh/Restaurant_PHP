@@ -1,6 +1,11 @@
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * Tệp JavaScript xử lý trang hồ sơ người dùng
+ * Xử lý cập nhật thông tin cá nhân, đổi mật khẩu, và upload avatar
+ */
+
+document.addEventListener('DOMContentLoaded', function () {
     const newPasswordInput = document.getElementById('new_password');
-    if (!newPasswordInput) return; 
+    if (!newPasswordInput) return;
 
     const passwordStrengthBar = document.getElementById('password-strength-bar');
     const passwordStrengthText = document.getElementById('password-strength-text');
@@ -34,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!passwordStrengthBar || !passwordStrengthText || !passwordRequirements) return;
 
         const { score, checks } = calculatePasswordStrength(password);
-        
+
         passwordStrengthBar.className = 'password-strength-bar';
         passwordStrengthText.className = 'password-strength-text';
 
@@ -70,13 +75,13 @@ document.addEventListener('DOMContentLoaded', function() {
         reqSpecial.classList.toggle('valid', checks.special);
     }
 
-    newPasswordInput.addEventListener('input', function() {
+    newPasswordInput.addEventListener('input', function () {
         updatePasswordStrengthUI(this.value);
     });
 
     // Toggle password visibility
     document.querySelectorAll('.password-toggle-icon').forEach(icon => {
-        icon.addEventListener('click', function() {
+        icon.addEventListener('click', function () {
             const targetId = this.getAttribute('data-target');
             const targetInput = document.getElementById(targetId);
             if (targetInput) {

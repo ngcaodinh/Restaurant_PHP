@@ -1,13 +1,66 @@
+/**
+ * Tệp JavaScript xử lý giỏ hàng
+ * Chứa các hàm quản lý giỏ hàng, cập nhật số lượng, tính tổng tiền, v.v.
+ */
+
+/**
+ * Hiển thị thông báo toast tùy chỉnh
+ */
+function showCustomToast(message) {
+    const container = document.getElementById('alert-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+
+    toast.innerHTML = `
+        <div class="toast-icon"><i class="fas fa-exclamation-circle"></i></div>
+        <div class="toast-message">${message}</div>
+        <button class="toast-close-btn">&times;</button>
+    `;
+
+    container.appendChild(toast);
+
+    // Hiển thị toast
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+
+    // Ẩn sau 6 giây
+    const hideTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 6000);
+
+    // Xóa khỏi DOM sau khi transition kết thúc
+    toast.addEventListener('transitionend', () => {
+        if (!toast.classList.contains('show')) {
+            toast.remove();
+        }
+    });
+
+    // Xử lý nút đóng
+    toast.querySelector('.toast-close-btn').addEventListener('click', () => {
+        clearTimeout(hideTimeout);
+        toast.classList.remove('show');
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Base URL for AJAX requests
+    // Kiểm tra và hiển thị thông báo lỗi từ session
+    if (typeof sessionErrorMessage !== 'undefined' && sessionErrorMessage) {
+        showCustomToast(sessionErrorMessage);
+    }
+
+    // URL gốc cho các request AJAX
     const BASE_URL = window.location.origin + '/Restaurant_PHP/';
 
-    // Cart state
+    // Trạng thái giỏ hàng
     let isLoading = false;
     let map, marker;
-    let isMapInitialized = false;
 
-    // Format price function
+    /**
+     * Định dạng số tiền theo chuẩn Việt Nam
+     */
     const formatPrice = (price) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -17,14 +70,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }).format(price);
     };
 
-    // Animate number counting
+    /**
+     * Tạo hiệu ứng đếm số có animation
+     */
     const animateNumber = (element, startValue, endValue, duration = 500) => {
         if (!element) {
             console.warn('Element not found for animation');
             return;
         }
 
-        // If values are the same, no animation needed
+        // Nếu giá trị giống nhau, không cần animation
         if (startValue === endValue) {
             element.textContent = formatPrice(endValue);
             return;
@@ -37,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
 
-            // Use easing function for smooth animation
+            // Sử dụng easing function để animation mượt mà
             const easeOutQuart = 1 - Math.pow(1 - progress, 4);
             const currentValue = Math.round(startValue + (difference * easeOutQuart));
 
@@ -46,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (progress < 1) {
                 requestAnimationFrame(updateNumber);
             } else {
-                // Ensure final value is exact
+                // Đảm bảo giá trị cuối chính xác
                 element.textContent = formatPrice(endValue);
             }
         };
@@ -54,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(updateNumber);
     };
 
-    // Debounce function for search
+    // Hàm debounce cho tìm kiếm
     const debounce = (func, wait) => {
         let timeout;
         return (...args) => {
@@ -318,7 +373,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Disable/enable buttons
             const decreaseBtn = cartItem.querySelector('.quantity-btn[data-action="decrease"]');
-            const increaseBtn = cartItem.querySelector('.quantity-btn[data-action="increase"]');
             if (decreaseBtn) decreaseBtn.disabled = currentQuantity <= 1;
 
             // Send AJAX request

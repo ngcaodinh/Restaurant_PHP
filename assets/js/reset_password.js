@@ -1,4 +1,9 @@
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * Tệp JavaScript xử lý trang đặt lại mật khẩu
+ * Xử lý form đặt lại mật khẩu và kiểm tra độ mạnh mật khẩu
+ */
+
+document.addEventListener('DOMContentLoaded', function () {
     const resetEmailForm = document.getElementById('resetPasswordForm');
     const resetPasswordConfirmForm = document.getElementById('resetPasswordConfirmForm');
     const emailInput = document.getElementById('email');
@@ -22,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Password toggle
     if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', function() {
+        togglePassword.addEventListener('click', function () {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
             this.classList.toggle('fa-eye');
@@ -31,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (toggleConfirmPassword && confirmPasswordInput) {
-        toggleConfirmPassword.addEventListener('click', function() {
+        toggleConfirmPassword.addEventListener('click', function () {
             const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             confirmPasswordInput.setAttribute('type', type);
             this.classList.toggle('fa-eye');
@@ -153,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (resetEmailForm) {
-        resetEmailForm.addEventListener('submit', function(e) {
+        resetEmailForm.addEventListener('submit', function (e) {
             const email = emailInput.value.trim().toLowerCase();
 
             if (!email) {
@@ -173,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (resetPasswordConfirmForm) {
-        resetPasswordConfirmForm.addEventListener('submit', function(e) {
+        resetPasswordConfirmForm.addEventListener('submit', function (e) {
             const password = passwordInput.value;
             const confirmPassword = confirmPasswordInput.value;
 

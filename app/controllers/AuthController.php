@@ -7,23 +7,44 @@ use App\Models\User;
 use Database;
 use PDO;
 
+/**
+ * Class AuthController - Controller xử lý xác thực người dùng
+ *
+ * Controller này xử lý các chức năng liên quan đến xác thực như:
+ * đăng nhập, đăng ký, đăng xuất, và đăng nhập admin.
+ */
 class AuthController extends BaseController
 {
+    /**
+     * Model User để thao tác với dữ liệu người dùng
+     * @var User
+     */
     private User $userModel;
 
+    /**
+     * Constructor khởi tạo UserModel
+     */
     public function __construct()
     {
         $this->userModel = new User(Database::getInstance());
     }
 
+    /**
+     * Hiển thị trang đăng nhập
+     *
+     * Nếu người dùng đã đăng nhập, chuyển hướng đến trang phù hợp với vai trò.
+     *
+     * @return void
+     */
     public function showLogin(): void
     {
+        // Lấy thông báo lỗi từ session (nếu có)
         $errors = $_SESSION['login_errors'] ?? [];
         $authError = $_SESSION['error_message'] ?? '';
         $success = '';
         unset($_SESSION['login_errors'], $_SESSION['error_message']);
 
-        // Redirect if already logged in
+        // Nếu đã đăng nhập, chuyển hướng đến trang phù hợp
         if (isset($_SESSION['user_id'])) {
             $redirectUrl = match ($_SESSION['user_role']) {
                 'Admin' => BASE_URL . 'admin',
@@ -35,25 +56,37 @@ class AuthController extends BaseController
             exit();
         }
 
+        // Hiển thị trang đăng nhập
         $this->view('auth/login', compact('errors', 'authError', 'success'));
     }
 
+    /**
+     * Xử lý đăng nhập người dùng
+     *
+     * Phương thức này xác thực thông tin đăng nhập (email/SĐT và mật khẩu),
+     * kiểm tra trạng thái tài khoản, và tạo session nếu đăng nhập thành công.
+     *
+     * @return void
+     */
     public function login(): void
     {
+        // Chỉ chấp nhận POST request
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /login');
             exit();
         }
 
+        // Lấy dữ liệu từ form
         $emailOrPhone = $this->sanitizeInput(trim($_POST['email'] ?? ''));
         $password = $_POST['password'] ?? '';
         $remember = isset($_POST['remember']);
         $errors = [];
 
-        // Validate input
+        // Validate dữ liệu đầu vào
         if (empty($emailOrPhone)) {
             $errors[] = 'Vui lòng nhập email hoặc số điện thoại';
         } else {
+            // Regex kiểm tra định dạng email và số điện thoại
             $emailRegex = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
             $phoneRegex = '/^(\+84|84|0)[3-9][0-9]{8}$/';
 
@@ -70,13 +103,15 @@ class AuthController extends BaseController
             $errors[] = 'Vui lòng nhập mật khẩu';
         }
 
-        // Process login if no validation errors
+        // Xử lý đăng nhập nếu không có lỗi validation
         if (empty($errors)) {
             try {
+                // Chuẩn hóa input (chuyển số điện thoại về dạng 0xxx)
                 $normalizedInput = $isPhone ? preg_replace('/^(\+84|84)/', '0', $emailOrPhone) : $normalizedEmail;
                 $user = $this->userModel->findByEmailOrPhone($normalizedInput);
 
                 if ($user) {
+                    // Kiểm tra trạng thái tài khoản
                     if ($user['status'] != 'Active') {
                         $errors[] = 'Tài khoản của bạn hiện bị khóa. Vui lòng liên hệ quản trị viên.';
                     } elseif (!empty($user['google_id']) && empty($user['password'])) {
@@ -84,18 +119,19 @@ class AuthController extends BaseController
                     } elseif (empty($user['password'])) {
                         $errors[] = 'Tài khoản chưa thiết lập mật khẩu. Vui lòng sử dụng chức năng quên mật khẩu.';
                     } elseif (password_verify($password, $user['password'])) {
-                        // Successful login
+                        // Đăng nhập thành công
+                        // Tạo session ID mới để bảo mật
                         session_regenerate_id(true);
                         $_SESSION['user_id'] = $user['id'];
                         $_SESSION['user_name'] = $user['name'];
                         $_SESSION['user_role'] = $user['role'];
 
-                        // Update last login
+                        // Cập nhật thời gian đăng nhập cuối
                         $this->userModel->updateLastLogin($user['id']);
 
-                        // Handle remember me
+                        // Xử lý chức năng "Ghi nhớ đăng nhập"
                         if ($remember) {
-                            $cookieLifetime = 7 * 24 * 3600; // 7 days
+                            $cookieLifetime = 7 * 24 * 3600; // 7 ngày
                             ini_set('session.cookie_lifetime', $cookieLifetime);
                             session_set_cookie_params([
                                 'lifetime' => $cookieLifetime,
@@ -108,6 +144,7 @@ class AuthController extends BaseController
 
                         $success = 'Đăng nhập thành công! Đang chuyển hướng...';
 
+                        // Xác định URL chuyển hướng dựa trên vai trò
                         $redirectUrl = match ($user['role']) {
                             'Admin' => BASE_URL . 'admin',
                             'PremiumUser' => BASE_URL,
@@ -115,6 +152,7 @@ class AuthController extends BaseController
                             default => BASE_URL
                         };
 
+                        // Nếu có URL chuyển hướng được lưu trước đó, sử dụng nó
                         if (isset($_SESSION['redirect_after_login']) && !empty($_SESSION['redirect_after_login'])) {
                             $redirectUrl = $_SESSION['redirect_after_login'];
                             unset($_SESSION['redirect_after_login']);

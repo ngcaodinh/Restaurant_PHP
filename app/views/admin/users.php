@@ -12,6 +12,32 @@
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
+    <!-- Toast Notifications -->
+    <div class="position-fixed top-3 end-3 p-3" style="z-index: 1100">
+        <!-- Success Toast -->
+        <div id="successToast" class="toast hide bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white border-0">
+                <i class="material-symbols-rounded me-2">check_circle</i>
+                <strong class="me-auto">Thành công</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <!-- Message will be injected here -->
+            </div>
+        </div>
+
+        <!-- Error Toast -->
+        <div id="errorToast" class="toast hide bg-danger text-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-danger text-white border-0">
+                <i class="material-symbols-rounded me-2">error</i>
+                <strong class="me-auto">Lỗi</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <!-- Message will be injected here -->
+            </div>
+        </div>
+    </div>
     <?php require_once 'app/views/admin/sidebar.php'; ?>
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
         <!-- Navbar -->
@@ -87,27 +113,42 @@
 
     <!-- Edit User Modal -->
     <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editUserModalLabel">Chỉnh sửa người dùng</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-gradient-primary">
+                    <h5 class="modal-title text-white" id="editUserModalLabel">
+                        <i class="material-symbols-rounded align-middle">edit</i>
+                        Chỉnh sửa người dùng
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="editUserForm">
                         <input type="hidden" id="edit_user_id" name="user_id">
+
                         <div class="input-group input-group-outline my-3">
                             <label class="form-label">Tên</label>
-                            <input type="text" class="form-control" id="edit_name" name="name">
+                            <input type="text" class="form-control" id="edit_name" name="name" required>
                         </div>
+
                         <div class="input-group input-group-outline my-3">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-control" id="edit_email" name="email">
+                            <input type="email" class="form-control" id="edit_email" name="email" required>
                         </div>
+
                         <div class="input-group input-group-outline my-3">
                             <label class="form-label">Số điện thoại</label>
                             <input type="tel" class="form-control" id="edit_phone" name="phone">
                         </div>
+
+                        <div class="input-group input-group-outline mb-3">
+                            <label class="form-label">Mật khẩu mới (để trống nếu không đổi)</label>
+                            <input type="password" class="form-control" id="edit_password" name="password">
+                            <button class="btn btn-outline-secondary mb-0" type="button" id="togglePassword">
+                                <i class="material-symbols-rounded">visibility</i>
+                            </button>
+                        </div>
+
                         <div class="input-group input-group-static mb-4">
                             <label for="edit_role" class="ms-0">Vai trò</label>
                             <select class="form-control" id="edit_role" name="role">
@@ -116,6 +157,7 @@
                                 <option value="Admin">Admin</option>
                             </select>
                         </div>
+
                         <div class="input-group input-group-static mb-4">
                             <label for="edit_status" class="ms-0">Trạng thái</label>
                             <select class="form-control" id="edit_status" name="status">
@@ -126,59 +168,28 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" onclick="updateUser()">Lưu thay đổi</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="material-symbols-rounded align-middle">close</i> Hủy
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="updateUser(event)">
+                        <i class="material-symbols-rounded align-middle">save</i> Lưu thay đổi
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap JS -->
     <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/core/popper.min.js"></script>
     <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/core/bootstrap.min.js"></script>
+
+    <!-- Define BASE_URL for JavaScript -->
     <script>
-        let editModal;
-        document.addEventListener('DOMContentLoaded', function() {
-            editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
-        });
-
-        function editUser(user) {
-            document.getElementById('edit_user_id').value = user.id;
-            const nameInput = document.getElementById('edit_name');
-            nameInput.value = user.name;
-            nameInput.parentElement.classList.add('is-filled');
-
-            const emailInput = document.getElementById('edit_email');
-            emailInput.value = user.email || '';
-            emailInput.parentElement.classList.add('is-filled');
-
-            const phoneInput = document.getElementById('edit_phone');
-            phoneInput.value = user.phone || '';
-            phoneInput.parentElement.classList.add('is-filled');
-
-            document.getElementById('edit_role').value = user.role;
-            document.getElementById('edit_status').value = user.status;
-
-            editModal.show();
-        }
-
-        function updateUser() {
-            const form = document.getElementById('editUserForm');
-            const formData = new FormData(form);
-
-            fetch('/admin/updateUser', {
-                    method: 'POST',
-                    body: new URLSearchParams(formData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    if (data.success) {
-                        location.reload();
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
+        const BASE_URL = '<?php echo BASE_URL; ?>';
     </script>
+
+    <!-- Admin Users JavaScript -->
+    <script src="<?php echo BASE_URL; ?>assets/js/admin_users.js"></script>
 </body>
 
 </html>

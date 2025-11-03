@@ -1,3 +1,9 @@
+/**
+ * Tệp JavaScript xử lý trang quản lý món ăn admin
+ * Xử lý thêm, sửa, xóa món ăn và upload hình ảnh
+ */
+
+/** Mở modal thêm/sửa món ăn */
 function openModal(dish = null) {
     const modal = document.getElementById('dishModal');
     const form = document.getElementById('dishForm');
@@ -63,19 +69,19 @@ function refreshTable() {
     fetch(`dish_manage.php?${url.searchParams.toString()}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
-    .then(response => response.text())
-    .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newTbody = doc.querySelector('#dish-tbody');
-        const newPagination = doc.querySelector('.pagination');
-        document.querySelector('#dish-tbody').innerHTML = newTbody.innerHTML;
-        document.querySelector('.pagination').innerHTML = newPagination.innerHTML;
-    })
-    .catch(error => {
-        console.error('Error refreshing table:', error);
-        showMessage('Lỗi tải lại bảng món ăn.', 'error');
-    });
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newTbody = doc.querySelector('#dish-tbody');
+            const newPagination = doc.querySelector('.pagination');
+            document.querySelector('#dish-tbody').innerHTML = newTbody.innerHTML;
+            document.querySelector('.pagination').innerHTML = newPagination.innerHTML;
+        })
+        .catch(error => {
+            console.error('Error refreshing table:', error);
+            showMessage('Lỗi tải lại bảng món ăn.', 'error');
+        });
 }
 
 function showMessage(message, type) {
@@ -89,7 +95,7 @@ function showMessage(message, type) {
     modalMessage.innerHTML = messageDiv.outerHTML;
 }
 
-document.getElementById('dishForm').addEventListener('submit', function(event) {
+document.getElementById('dishForm').addEventListener('submit', function (event) {
     event.preventDefault();
     const form = this;
     const formData = new FormData(form);
@@ -100,25 +106,25 @@ document.getElementById('dishForm').addEventListener('submit', function(event) {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        saveButton.disabled = false;
-        if (data.success) {
-            showMessage(data.message, 'success');
-            closeModal();
-            refreshTable();
-        } else {
-            showMessage(data.errors.join('<br>'), 'error');
-        }
-    })
-    .catch(error => {
-        saveButton.disabled = false;
-        showMessage('Lỗi hệ thống: ' + error.message, 'error');
-        console.error('AJAX error:', error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            saveButton.disabled = false;
+            if (data.success) {
+                showMessage(data.message, 'success');
+                closeModal();
+                refreshTable();
+            } else {
+                showMessage(data.errors.join('<br>'), 'error');
+            }
+        })
+        .catch(error => {
+            saveButton.disabled = false;
+            showMessage('Lỗi hệ thống: ' + error.message, 'error');
+            console.error('AJAX error:', error);
+        });
 });
 
-window.onclick = function(event) {
+window.onclick = function (event) {
     const modal = document.getElementById('dishModal');
     if (event.target === modal) {
         closeModal();

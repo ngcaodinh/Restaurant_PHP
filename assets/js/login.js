@@ -1,3 +1,8 @@
+/**
+ * Tệp JavaScript xử lý trang đăng nhập
+ * Xử lý validation form, hiển thị/ẩn mật khẩu, và đăng nhập Google
+ */
+
 document.addEventListener('DOMContentLoaded', function () {
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
@@ -16,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // Password toggle
+    // Xử lý hiển thị/ẩn mật khẩu
     if (togglePassword && passwordInput) {
         togglePassword.addEventListener('click', function () {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -26,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /** Hàm debounce để giảm số lần gọi hàm */
     function debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -38,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
+    /** Validate email hoặc số điện thoại */
     function validateEmailOrPhoneInput() {
         const input = emailInput.value.trim().toLowerCase();
         const emailRegex = /^[a-z0-9._%+-]+@gmail\.com$/;
@@ -64,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     emailInput.addEventListener('input', debouncedValidateEmailOrPhone);
 
+    /** Ẩn tất cả thông báo */
     function hideMessages() {
         errorMessage.classList.remove('show');
         successMessage.classList.remove('show');
@@ -71,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
         successMessage.style.display = 'none';
     }
 
+    /** Hiển thị thông báo lỗi */
     function showError(message) {
         hideMessages();
         errorMessage.innerHTML = message.split('\n').map(line => `<p>${line}</p>`).join('');
@@ -79,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
         autoHideMessage(errorMessage);
     }
 
+    /** Hiển thị thông báo thành công */
     function showSuccess(message) {
         hideMessages();
         successMessage.textContent = message;
@@ -87,6 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
         autoHideMessage(successMessage);
     }
 
+    /** Tự động ẩn thông báo sau 5 giây */
     function autoHideMessage(element) {
         if (element.style.display !== 'none') {
             setTimeout(() => {
@@ -96,12 +107,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Xử lý đăng nhập Google
     if (googleLoginBtn) {
         googleLoginBtn.addEventListener('click', function () {
             window.location.href = '/Restaurant_PHP/google_auth.php';
         });
     }
 
+    // Xử lý submit form đăng nhập
     loginForm.addEventListener('submit', function (e) {
         const email = emailInput.value.trim().toLowerCase();
         const password = passwordInput.value;
@@ -127,11 +140,13 @@ document.addEventListener('DOMContentLoaded', function () {
         setLoadingState(true);
     });
 
+    // Ẩn thông báo khi focus vào input
     const inputs = document.querySelectorAll('.form-input');
     inputs.forEach(input => {
         input.addEventListener('focus', hideMessages);
     });
 
+    /** Thiết lập trạng thái loading cho nút đăng nhập */
     function setLoadingState(isLoading) {
         loginBtn.disabled = isLoading;
         loadingSpinner.style.display = isLoading ? 'inline-block' : 'none';

@@ -4,15 +4,39 @@ namespace App\Models;
 
 use PDO;
 
+/**
+ * Class User - Model quản lý người dùng
+ *
+ * Class này xử lý tất cả các thao tác liên quan đến người dùng trong database,
+ * bao gồm tìm kiếm, tạo mới, cập nhật và xóa người dùng.
+ */
 class User
 {
+    /**
+     * Đối tượng PDO để kết nối database
+     * @var PDO
+     */
     private PDO $db;
 
+    /**
+     * Constructor khởi tạo model với kết nối database
+     *
+     * @param PDO $db Đối tượng PDO để thao tác với database
+     */
     public function __construct(PDO $db)
     {
         $this->db = $db;
     }
 
+    /**
+     * Tìm người dùng theo email hoặc số điện thoại
+     *
+     * Hàm này tìm kiếm người dùng bằng email hoặc số điện thoại.
+     * Chỉ trả về người dùng chưa bị xóa (deleted_at IS NULL).
+     *
+     * @param string $identifier Email hoặc số điện thoại cần tìm
+     * @return array|null Thông tin người dùng nếu tìm thấy, null nếu không
+     */
     public function findByEmailOrPhone(string $identifier): ?array
     {
         $query = 'SELECT id, name, email, phone, password, role, status, google_id, last_login
@@ -24,12 +48,24 @@ class User
         return $user ?: null;
     }
 
+    /**
+     * Cập nhật thời gian đăng nhập cuối cùng
+     *
+     * @param int $userId ID của người dùng
+     * @return void
+     */
     public function updateLastLogin(int $userId): void
     {
         $stmt = $this->db->prepare('UPDATE users SET last_login = NOW() WHERE id = ?');
         $stmt->execute([$userId]);
     }
 
+    /**
+     * Tìm người dùng theo ID
+     *
+     * @param int $id ID của người dùng cần tìm
+     * @return array|null Thông tin người dùng nếu tìm thấy, null nếu không
+     */
     public function findById(int $id): ?array
     {
         $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL");
@@ -38,6 +74,12 @@ class User
         return $result ?: null;
     }
 
+    /**
+     * Tìm người dùng theo email
+     *
+     * @param string $email Email cần tìm (không phân biệt hoa thường)
+     * @return array|null Thông tin người dùng nếu tìm thấy, null nếu không
+     */
     public function findByEmail(string $email): ?array
     {
         $stmt = $this->db->prepare("SELECT * FROM users WHERE LOWER(email) = ? AND deleted_at IS NULL");
@@ -46,6 +88,12 @@ class User
         return $result ?: null;
     }
 
+    /**
+     * Tìm người dùng theo số điện thoại
+     *
+     * @param string $phone Số điện thoại cần tìm
+     * @return array|null Thông tin người dùng nếu tìm thấy, null nếu không
+     */
     public function findByPhone(string $phone): ?array
     {
         $stmt = $this->db->prepare("SELECT * FROM users WHERE phone = ? AND deleted_at IS NULL");
@@ -54,6 +102,15 @@ class User
         return $result ?: null;
     }
 
+    /**
+     * Tạo người dùng mới
+     *
+     * Hàm này thêm một người dùng mới vào database.
+     * Mật khẩu nên được hash trước khi truyền vào.
+     *
+     * @param array $data Mảng chứa thông tin người dùng (name, email, phone, password, role)
+     * @return int|null ID của người dùng mới tạo, hoặc null nếu thất bại
+     */
     public function create(array $data): ?int
     {
         try {
@@ -80,6 +137,13 @@ class User
         try {
             $fields = [];
             $values = [];
+
+            // Handle password separately for hashing
+            if (!empty($data['password'])) {
+                $fields[] = "password = ?";
+                $values[] = password_hash($data['password'], PASSWORD_DEFAULT);
+                unset($data['password']); // Unset to avoid processing it again
+            }
 
             foreach (['name', 'email', 'phone', 'address', 'avatar_url', 'role', 'status'] as $field) {
                 if (array_key_exists($field, $data)) {

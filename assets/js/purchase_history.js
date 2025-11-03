@@ -1,3 +1,8 @@
+/**
+ * Tệp JavaScript xử lý trang lịch sử mua hàng
+ * Xử lý hiển thị chi tiết đơn hàng và hủy đơn hàng
+ */
+
 document.addEventListener('DOMContentLoaded', function () {
     const orderIdFilter = document.getElementById('orderIdFilter');
     const dateFilter = document.getElementById('dateFilter');

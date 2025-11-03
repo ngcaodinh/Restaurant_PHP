@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use PDO;
@@ -15,7 +16,7 @@ class Category
     public function getAllCategories(): array
     {
         $stmt = $this->db->prepare("
-            SELECT id, name, description, created_at, updated_at 
+            SELECT id, name, created_at, updated_at
             FROM categories 
             WHERE deleted_at IS NULL 
             ORDER BY name ASC
@@ -27,7 +28,7 @@ class Category
     public function getCategoryById(int $id): ?array
     {
         $stmt = $this->db->prepare("
-            SELECT id, name, description, created_at, updated_at 
+            SELECT id, name, created_at, updated_at
             FROM categories 
             WHERE id = ? AND deleted_at IS NULL
         ");
@@ -40,12 +41,11 @@ class Category
     {
         try {
             $stmt = $this->db->prepare("
-                INSERT INTO categories (name, description, created_at, updated_at) 
-                VALUES (?, ?, NOW(), NOW())
+                INSERT INTO categories (name, created_at, updated_at)
+                VALUES (?, NOW(), NOW())
             ");
             $stmt->execute([
-                $data['name'],
-                $data['description'] ?? ''
+                $data['name']
             ]);
             return $this->db->lastInsertId();
         } catch (\Exception $e) {
@@ -58,13 +58,12 @@ class Category
     {
         try {
             $stmt = $this->db->prepare("
-                UPDATE categories 
-                SET name = ?, description = ?, updated_at = NOW() 
+                UPDATE categories
+                SET name = ?, updated_at = NOW()
                 WHERE id = ? AND deleted_at IS NULL
             ");
             $stmt->execute([
                 $data['name'],
-                $data['description'] ?? '',
                 $id
             ]);
             return $stmt->rowCount() > 0;
@@ -81,7 +80,7 @@ class Category
             $stmt = $this->db->prepare("SELECT COUNT(*) as count FROM dishes WHERE category_id = ? AND deleted_at IS NULL");
             $stmt->execute([$id]);
             $count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
-            
+
             if ($count > 0) {
                 return false; // Cannot delete category with dishes
             }
@@ -98,15 +97,14 @@ class Category
     public function getCategoriesWithDishCount(): array
     {
         $stmt = $this->db->prepare("
-            SELECT 
-                c.id, 
-                c.name, 
-                c.description,
+            SELECT
+                c.id,
+                c.name,
                 COUNT(d.id) as dish_count
             FROM categories c
             LEFT JOIN dishes d ON c.id = d.category_id AND d.deleted_at IS NULL
             WHERE c.deleted_at IS NULL
-            GROUP BY c.id, c.name, c.description
+            GROUP BY c.id, c.name
             ORDER BY c.name ASC
         ");
         $stmt->execute();

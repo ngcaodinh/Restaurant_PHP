@@ -5,10 +5,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Quản lý Đơn hàng - Admin</title>
+
+    <!-- Google Fonts -->
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
-    <link href="<?php echo BASE_URL; ?>assets/css/material-dashboard/nucleo-icons.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- Material Dashboard CSS -->
+    <link href="<?php echo BASE_URL; ?>assets/css/material-dashboard/nucleo-icons.css" rel="stylesheet" />
     <link id="pagestyle" href="<?php echo BASE_URL; ?>assets/css/material-dashboard/material-dashboard.min.css" rel="stylesheet" />
+
+    <!-- Custom Admin Orders CSS -->
+    <link href="<?php echo BASE_URL; ?>assets/css/admin_orders.css" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
@@ -77,9 +84,13 @@
                                                 </td>
                                                 <td class="align-middle text-center"><span class="text-secondary text-xs font-weight-bold"><?php echo date('d/m/Y H:i', strtotime($order['created_at'])); ?></span></td>
                                                 <td class="align-middle">
-                                                    <a href="<?php echo BASE_URL; ?>order?id=<?php echo $order['id']; ?>" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Xem chi tiết">
-                                                        Xem
-                                                    </a>
+                                                    <button class="btn btn-link text-secondary font-weight-bold text-xs p-0 view-order-btn"
+                                                        data-order-id="<?php echo $order['id']; ?>"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-placement="top"
+                                                        title="Xem chi tiết đơn hàng">
+                                                        <i class="material-symbols-rounded text-sm">visibility</i> Xem
+                                                    </button>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -96,130 +107,83 @@
         </div>
     </main>
 
-    <!-- Confirmation Modal -->
-    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmationModalLabel">Xác nhận thay đổi</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Modals and Toasts -->
+    <div id="modals-container">
+        <!-- Order Details Modal -->
+        <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary">
+                        <h5 class="modal-title text-white" id="orderDetailsModalLabel">
+                            <i class="material-symbols-rounded align-middle">receipt_long</i>
+                            Chi tiết đơn hàng <span id="orderIdDisplay"></span>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-0" id="orderDetailsContent">
+                        <!-- Loading spinner -->
+                        <div class="text-center py-5" id="loadingSpinner">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Đang tải thông tin đơn hàng...</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="material-symbols-rounded align-middle">close</i> Đóng
+                        </button>
+                    </div>
                 </div>
-                <div class="modal-body" id="confirmationModalBody">
-                    <!-- Confirmation message will be injected here -->
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmationModalLabel">Xác nhận thay đổi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="confirmationModalBody">
+                        <!-- Confirmation message will be injected here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-primary" id="confirmChangeBtn">Xác nhận</button>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" id="confirmChangeBtn">Xác nhận</button>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="position-fixed top-3 end-3 p-3" style="z-index: 1100">
+            <div id="successToast" class="toast hide bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header bg-success text-white border-0">
+                    <i class="material-symbols-rounded me-2">check_circle</i>
+                    <strong class="me-auto">Thành công</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    Cập nhật trạng thái thành công!
                 </div>
             </div>
         </div>
     </div>
+    <!-- End Modals Container -->
 
-    <!-- Toast Notification -->
-    <div class="position-fixed top-3 end-3 p-3" style="z-index: 1100">
-        <div id="successToast" class="toast hide bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header bg-success text-white border-0">
-                <i class="material-symbols-rounded me-2">check_circle</i>
-                <strong class="me-auto">Thành công</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                Cập nhật trạng thái thành công!
-            </div>
-        </div>
-    </div>
-
+    <!-- Bootstrap JS -->
     <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/core/popper.min.js"></script>
     <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/core/bootstrap.min.js"></script>
+
+    <!-- Define BASE_URL for JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-            const successToast = new bootstrap.Toast(document.getElementById('successToast'), {
-                delay: 5000
-            });
-            const confirmBtn = document.getElementById('confirmChangeBtn');
-            const confirmationModalBody = document.getElementById('confirmationModalBody');
-            let activeSelect = null;
-
-            const validTransitions = {
-                'Pending': ['Confirmed', 'Cancelled'],
-                'Confirmed': ['Processing', 'Cancelled'],
-                'Processing': ['Shipped'],
-                'Shipped': ['Delivered'],
-                'Delivered': [],
-                'Cancelled': [],
-                'Refunded': []
-            };
-
-            document.querySelectorAll('.status-select').forEach(select => {
-                const currentStatus = select.dataset.currentStatus;
-                const finalStates = ['Delivered', 'Cancelled', 'Refunded'];
-
-                if (finalStates.includes(currentStatus)) {
-                    select.disabled = true;
-                }
-
-                Array.from(select.options).forEach(option => {
-                    if (option.value !== currentStatus && (!validTransitions[currentStatus] || !validTransitions[currentStatus].includes(option.value))) {
-                        option.disabled = true;
-                    }
-                });
-
-                select.addEventListener('change', function(event) {
-                    activeSelect = event.target;
-                    const orderId = activeSelect.dataset.orderId;
-                    const newStatus = activeSelect.value;
-                    const oldStatusText = activeSelect.querySelector(`option[value="${currentStatus}"]`).textContent;
-                    const newStatusText = activeSelect.querySelector(`option[value="${newStatus}"]`).textContent;
-
-                    confirmationModalBody.textContent = `Bạn có chắc muốn đổi trạng thái đơn hàng #${orderId} từ '${oldStatusText}' sang '${newStatusText}'?`;
-                    confirmationModal.show();
-                });
-            });
-
-            confirmBtn.addEventListener('click', function() {
-                if (!activeSelect) return;
-
-                const orderId = activeSelect.dataset.orderId;
-                const newStatus = activeSelect.value;
-                const currentStatus = activeSelect.dataset.currentStatus;
-
-                fetch('<?php echo BASE_URL; ?>api/order/update-status', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `order_id=${orderId}&status=${newStatus}`
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        confirmationModal.hide();
-                        if (data.success) {
-                            successToast.show();
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
-                        } else {
-                            alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái.'));
-                            activeSelect.value = currentStatus; // Revert on failure
-                        }
-                    })
-                    .catch(error => {
-                        confirmationModal.hide();
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi kết nối đến máy chủ.');
-                        activeSelect.value = currentStatus; // Revert on error
-                    });
-            });
-
-            // Reset select if modal is cancelled
-            document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', function() {
-                if (activeSelect) {
-                    activeSelect.value = activeSelect.dataset.currentStatus;
-                }
-            });
-        });
+        const BASE_URL = '<?php echo BASE_URL; ?>';
     </script>
+
+    <!-- Custom Admin Orders JS -->
+    <script src="<?php echo BASE_URL; ?>assets/js/admin_orders.js"></script>
 </body>
 
 </html>

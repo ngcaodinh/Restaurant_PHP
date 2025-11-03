@@ -1,0 +1,180 @@
+/* ============================================
+   Admin Orders Page - Custom Styles
+   ============================================ */
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Order Item Row Styles */
+.order-item-row {
+    transition: all 0.3s ease;
+}
+
+.order-item-row:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+    transform: translateX(5px);
+}
+
+/* Modal Header Gradients */
+.modal-header.bg-gradient-primary {
+    background: linear-gradient(195deg, #42424a 0%, #191919 100%);
+}
+
+/* Card Header Gradients */
+.card-header.bg-gradient-info {
+    background: linear-gradient(195deg, #49a3f1 0%, #1A73E8 100%);
+}
+
+.card-header.bg-gradient-success {
+    background: linear-gradient(195deg, #66BB6A 0%, #43A047 100%);
+}
+
+.card-header.bg-gradient-dark {
+    background: linear-gradient(195deg, #42424a 0%, #191919 100%);
+}
+
+/* Card Hover Effects */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 27px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* View Order Button */
+.view-order-btn {
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.view-order-btn:hover {
+    color: #1A73E8 !important;
+    transform: scale(1.1);
+}
+
+.view-order-btn i {
+    vertical-align: middle;
+    transition: transform 0.3s ease;
+}
+
+.view-order-btn:hover i {
+    transform: scale(1.2);
+}
+
+/* Loading Spinner */
+#loadingSpinner {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.5em 0.75em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Modal Styles */
+.modal-lg {
+    max-width: 900px;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Table Styles */
+.table td {
+    vertical-align: middle;
+}
+
+tbody tr:not(.bg-light):hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Status Select Dropdown */
+.status-select {
+    transition: all 0.3s ease;
+    border: 1px solid #d2d6da;
+}
+
+.status-select:hover {
+    border-color: #1A73E8;
+    box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.1);
+}
+
+.status-select:focus {
+    border-color: #1A73E8;
+    box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25);
+}
+
+/* Icon Shape */
+.icon-shape {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Alert Styles */
+.alert-info {
+    background-color: rgba(26, 115, 232, 0.1);
+    border-left: 3px solid #1A73E8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modal-lg {
+        max-width: 95%;
+    }
+    
+    .card:hover {
+        transform: none;
+    }
+    
+    .order-item-row:hover {
+        transform: none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .sidebar,
+    .navbar,
+    .view-order-btn,
+    .status-select,
+    .btn {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+    }
+}
+

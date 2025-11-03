@@ -1,7 +1,27 @@
+/**
+ * Tệp JavaScript chính cho trang chủ
+ *
+ * Tệp này chứa các hàm xử lý tương tác người dùng trên trang chủ,
+ * bao gồm giỏ hàng, danh sách yêu thích, hiển thị chi tiết sản phẩm, v.v.
+ */
+
+// Biến toàn cục lưu trữ giỏ hàng
 let cart = [];
+// Biến toàn cục lưu trữ danh sách yêu thích
 let wishlist = [];
+// ID sản phẩm hiện tại đang được xem
 let currentProductId = '';
 
+/**
+ * Hàm debounce để giảm số lần gọi hàm
+ *
+ * Hàm này trì hoãn việc thực thi một hàm cho đến khi người dùng ngừng gọi nó
+ * trong một khoảng thời gian nhất định. Hữu ích cho các sự kiện như scroll, resize, input.
+ *
+ * @param {Function} func - Hàm cần debounce
+ * @param {number} wait - Thời gian chờ (milliseconds)
+ * @return {Function} Hàm đã được debounce
+ */
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -14,6 +34,14 @@ function debounce(func, wait) {
     };
 }
 
+/**
+ * Cập nhật số lượng hiển thị trên icon giỏ hàng và danh sách yêu thích
+ *
+ * Hàm này cập nhật số lượng sản phẩm hiển thị trên badge của icon giỏ hàng
+ * và danh sách yêu thích ở header.
+ *
+ * @return {void}
+ */
 function updateCounters() {
     const cartCount = document.getElementById('cart-count');
     const wishlistCount = document.getElementById('wishlist-count');
@@ -21,19 +49,36 @@ function updateCounters() {
     if (wishlistCount) wishlistCount.textContent = wishlist.length;
 }
 
+/**
+ * Gửi yêu cầu AJAX đến server
+ *
+ * Hàm này gửi yêu cầu POST đến ajax_handler.php để xử lý các action
+ * như thêm vào giỏ hàng, thêm vào danh sách yêu thích, v.v.
+ *
+ * @param {string} action - Tên action cần thực hiện (add_to_cart, add_to_wishlist, etc.)
+ * @param {number} dishId - ID của món ăn
+ * @param {Function} callback - Hàm callback được gọi khi request thành công
+ * @return {void}
+ */
 function sendAjaxRequest(action, dishId, callback) {
+    // Tạo đối tượng XMLHttpRequest
     const xhr = new XMLHttpRequest();
     xhr.open('POST', BASE_URL + 'ajax_handler.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    // Xử lý khi nhận được response
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
                 try {
+                    // Parse JSON response
                     const response = JSON.parse(xhr.responseText);
                     if (response.success && callback) {
                         callback(response);
                     } else {
+                        // Hiển thị thông báo lỗi
                         showNotification(response.message || 'Vui lòng đăng nhập để tiếp tục', 'error');
+                        // Nếu cần đăng nhập, chuyển hướng đến trang login
                         if (response.message.includes('đăng nhập')) {
                             setTimeout(() => {
                                 window.location.href = BASE_URL + 'login.php';
@@ -48,9 +93,13 @@ function sendAjaxRequest(action, dishId, callback) {
             }
         }
     };
+
+    // Xử lý lỗi kết nối
     xhr.onerror = function () {
         showNotification('⚠️ Lỗi kết nối server!', 'error');
     };
+
+    // Gửi request với dữ liệu
     xhr.send(`action=${action}&dish_id=${dishId}`);
 }
 

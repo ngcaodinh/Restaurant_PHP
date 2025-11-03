@@ -1,4 +1,9 @@
- // Toggle hamburger menu
+/**
+ * Tệp JavaScript xử lý header
+ * Xử lý menu hamburger, dropdown, và menu người dùng
+ */
+
+/** Xử lý menu hamburger trên mobile */
 document.addEventListener('DOMContentLoaded', () => {
     const hamburger = document.querySelector('.hamburger');
     const menuNav = document.querySelector('.menu-nav');
@@ -10,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Toggle dropdown menu on mobile
+/** Xử lý dropdown menu trên mobile */
 document.addEventListener('DOMContentLoaded', () => {
     const dropdowns = document.querySelectorAll('.dropdown');
     dropdowns.forEach(dropdown => {
@@ -27,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Toggle user menu
+/** Xử lý menu người dùng */
 function toggleUserMenu() {
     const userMenu = document.getElementById('userMenu');
     if (userMenu) {

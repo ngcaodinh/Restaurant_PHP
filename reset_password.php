@@ -1,21 +1,37 @@
 <?php
+
+/**
+ * Tệp xử lý chức năng đặt lại mật khẩu
+ *
+ * Tệp này bao gồm logic và giao diện cho quy trình đặt lại mật khẩu theo 2 bước:
+ * 1. Người dùng nhập email/số điện thoại để xác minh tài khoản.
+ * 2. Nếu tài khoản hợp lệ, người dùng nhập mật khẩu mới.
+ */
+
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Tải các tệp cần thiết
 require_once 'includes/config.php';
 require_once 'includes/db_connect.php';
 require_once 'includes/functions.php';
 require_once 'includes/auth.php';
 
+// Khởi tạo các biến
 $errors = [];
 $success = '';
-$step = 'input_email'; // Mặc định là bước nhập email/số điện thoại
+$step = 'input_email'; // Bước mặc định là nhập email/SĐT
 $email_or_phone = '';
 
+// Xử lý khi form được gửi đi (POST request)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // === BƯỚC 1: XÁC MINH EMAIL/SĐT ===
     if (isset($_POST['step']) && $_POST['step'] === 'input_email') {
-        $email_or_phone = sanitize_input(strtolower($_POST['email'] ?? '')); 
+        $email_or_phone = sanitize_input(strtolower($_POST['email'] ?? ''));
+
+        // Validate input
         if (empty($email_or_phone)) {
             $errors[] = 'Vui lòng nhập email hoặc số điện thoại';
         } else {
@@ -29,11 +45,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Nếu không có lỗi validation, kiểm tra tài khoản trong DB
         if (empty($errors)) {
             try {
-                $query = 'SELECT id, email, phone FROM users 
-                         WHERE (LOWER(email) = ? OR phone = ?) 
-                         AND status = "Active" 
+                $query = 'SELECT id, email, phone FROM users
+                         WHERE (LOWER(email) = ? OR phone = ?)
+                         AND status = "Active"
                          AND deleted_at IS NULL';
                 $normalized_input = $is_phone ? preg_replace('/^\+84|84/', '0', $email_or_phone) : $email_or_phone;
                 $stmt = $pdo->prepare($query);
@@ -42,8 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log("Reset password input: $email_or_phone, Normalized: $normalized_input, User: " . print_r($user, true));
 
                 if ($user) {
-                    $step = 'reset_password'; // Chuyển sang bước nhập mật khẩu mới
-                    $_SESSION['reset_email_or_phone'] = $normalized_input; // Lưu tạm để sử dụng ở bước sau
+                    // Nếu tìm thấy tài khoản, chuyển sang bước 2
+                    $step = 'reset_password';
+                    $_SESSION['reset_email_or_phone'] = $normalized_input; // Lưu email/SĐT vào session để dùng ở bước 2
                 } else {
                     $errors[] = 'Email hoặc số điện thoại không tồn tại hoặc tài khoản không hoạt động';
                 }
@@ -52,48 +70,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log("Database error: " . $e->getMessage());
             }
         }
+
+        // === BƯỚC 2: ĐẶT LẠI MẬT KHẨU MỚI ===
     } elseif (isset($_POST['step']) && $_POST['step'] === 'reset_password' && isset($_SESSION['reset_email_or_phone'])) {
         $password = $_POST['password'] ?? '';
         $confirm_password = $_POST['confirm_password'] ?? '';
         $email_or_phone = $_SESSION['reset_email_or_phone'];
 
-        // Kiểm tra độ mạnh mật khẩu
+        // Validate mật khẩu mới
         if (empty($password)) {
             $errors[] = 'Vui lòng nhập mật khẩu mới';
         } elseif (strlen($password) < 8) {
             $errors[] = 'Mật khẩu phải có ít nhất 8 ký tự';
-        } elseif (!preg_match('/[A-Z]/', $password) || 
-                 !preg_match('/[a-z]/', $password) || 
-                 !preg_match('/[0-9]/', $password) || 
-                 !preg_match('/[!@#$%^&*]/', $password)) {
+        } elseif (
+            !preg_match('/[A-Z]/', $password) ||
+            !preg_match('/[a-z]/', $password) ||
+            !preg_match('/[0-9]/', $password) ||
+            !preg_match('/[!@#$%^&*]/', $password)
+        ) {
             $errors[] = 'Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt (!@#$%^&*)';
         } elseif ($password !== $confirm_password) {
             $errors[] = 'Mật khẩu xác nhận không khớp';
         }
 
+        // Nếu không có lỗi, cập nhật mật khẩu trong DB
         if (empty($errors)) {
             try {
                 $is_phone = preg_match('/^0[3-9][0-9]{8}$/', $email_or_phone);
-                $query = 'SELECT id FROM users 
-                         WHERE (' . ($is_phone ? 'phone' : 'LOWER(email)') . ' = ?) 
-                         AND status = "Active" 
+                $query = 'SELECT id FROM users
+                         WHERE (' . ($is_phone ? 'phone' : 'LOWER(email)') . ' = ?)
+                         AND status = "Active"
                          AND deleted_at IS NULL';
                 $stmt = $pdo->prepare($query);
                 $stmt->execute([$email_or_phone]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($user) {
-                    // Cập nhật mật khẩu
+                    // Hash mật khẩu và cập nhật vào DB
                     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                     $stmt = $pdo->prepare('UPDATE users SET password = ? WHERE id = ?');
                     $stmt->execute([$hashed_password, $user['id']]);
 
-                    // Xóa session
+                    // Xóa session sau khi hoàn tất
                     unset($_SESSION['reset_email_or_phone']);
 
                     $success = 'Mật khẩu đã được đặt lại thành công! Đang chuyển hướng đến trang đăng nhập...';
                     header('Refresh: 2; url=login.php');
                 } else {
+                    // Nếu không tìm thấy user (trường hợp hiếm), quay lại bước 1
                     $errors[] = 'Tài khoản không tồn tại hoặc không hoạt động';
                     $step = 'input_email';
                     unset($_SESSION['reset_email_or_phone']);
@@ -109,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -117,11 +142,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="/Restaurant_PHP/assets/css/style.css">
     <link rel="stylesheet" href="/Restaurant_PHP/assets/css/login.css">
 </head>
+
 <body>
     <div class="background-overlay"></div>
-    <?php 
+    <?php
     try {
-        include 'templates/header.php'; 
+        include 'templates/header.php';
         echo "<!-- Header loaded successfully -->";
     } catch (Exception $e) {
         echo "<p>Lỗi tải header: " . htmlspecialchars($e->getMessage()) . "</p>";
@@ -146,42 +172,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if ($step === 'input_email'): ?>
-            <form class="login-form" id="resetPasswordForm" method="POST" action="reset_password.php" novalidate>
-                <input type="hidden" name="step" value="input_email">
-                <div class="form-group">
-                    <label for="email" class="form-label">Email hoặc Số điện thoại</label>
-                    <input type="text" id="email" name="email" class="form-input" placeholder="Nhập email hoặc số điện thoại" value="<?php echo htmlspecialchars($email_or_phone); ?>" required autocomplete="username">
-                </div>
+                <form class="login-form" id="resetPasswordForm" method="POST" action="reset_password.php" novalidate>
+                    <input type="hidden" name="step" value="input_email">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email hoặc Số điện thoại</label>
+                        <input type="text" id="email" name="email" class="form-input" placeholder="Nhập email hoặc số điện thoại" value="<?php echo htmlspecialchars($email_or_phone); ?>" required autocomplete="username">
+                    </div>
 
-                <button type="submit" class="login-button" id="resetBtn">
-                    <div class="loading-spinner" id="loadingSpinner"></div>
-                    <span id="resetBtnText">Tiếp tục</span>
-                </button>
-            </form>
+                    <button type="submit" class="login-button" id="resetBtn">
+                        <div class="loading-spinner" id="loadingSpinner"></div>
+                        <span id="resetBtnText">Tiếp tục</span>
+                    </button>
+                </form>
             <?php else: ?>
-            <form class="login-form" id="resetPasswordConfirmForm" method="POST" action="reset_password.php" novalidate>
-                <input type="hidden" name="step" value="reset_password">
-                <div class="form-group">
-                    <label for="password" class="form-label">Mật khẩu mới</label>
-                    <div style="position: relative;">
-                        <input type="password" id="password" name="password" class="form-input" placeholder="Nhập mật khẩu mới" required autocomplete="new-password">
-                        <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                <form class="login-form" id="resetPasswordConfirmForm" method="POST" action="reset_password.php" novalidate>
+                    <input type="hidden" name="step" value="reset_password">
+                    <div class="form-group">
+                        <label for="password" class="form-label">Mật khẩu mới</label>
+                        <div style="position: relative;">
+                            <input type="password" id="password" name="password" class="form-input" placeholder="Nhập mật khẩu mới" required autocomplete="new-password">
+                            <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="confirm_password" class="form-label">Xác nhận mật khẩu</label>
-                    <div style="position: relative;">
-                        <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Xác nhận mật khẩu" required autocomplete="new-password">
-                        <i class="fas fa-eye password-toggle" id="toggleConfirmPassword"></i>
+                    <div class="form-group">
+                        <label for="confirm_password" class="form-label">Xác nhận mật khẩu</label>
+                        <div style="position: relative;">
+                            <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Xác nhận mật khẩu" required autocomplete="new-password">
+                            <i class="fas fa-eye password-toggle" id="toggleConfirmPassword"></i>
+                        </div>
                     </div>
-                </div>
 
-                <button type="submit" class="login-button" id="confirmBtn">
-                    <div class="loading-spinner" id="loadingSpinner"></div>
-                    <span id="confirmBtnText">Cập nhật mật khẩu</span>
-                </button>
-            </form>
+                    <button type="submit" class="login-button" id="confirmBtn">
+                        <div class="loading-spinner" id="loadingSpinner"></div>
+                        <span id="confirmBtnText">Cập nhật mật khẩu</span>
+                    </button>
+                </form>
             <?php endif; ?>
 
             <div class="register-link">
@@ -193,4 +219,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="/Restaurant_PHP/assets/js/header.js"></script>
     <script src="/Restaurant_PHP/assets/js/reset_password.js"></script>
 </body>
+
 </html>

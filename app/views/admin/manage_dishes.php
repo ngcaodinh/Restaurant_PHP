@@ -38,6 +38,36 @@
                             </div>
                         </div>
                         <div class="card-body px-0 pb-2">
+                            <div class="px-3 pb-3">
+                                <form id="filterForm" method="GET" action="">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-4">
+                                            <div class="input-group input-group-static">
+                                                <label for="filter_category" class="ms-0">Lọc theo danh mục</label>
+                                                <select class="form-control" id="filter_category" name="category" onchange="this.form.submit()">
+                                                    <option value="">Tất cả</option>
+                                                    <?php foreach ($categories as $category): ?>
+                                                        <option value="<?php echo $category['id']; ?>" <?php echo (isset($_GET['category']) && $_GET['category'] == $category['id']) ? 'selected' : ''; ?>>
+                                                            <?php echo htmlspecialchars($category['name']); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <br>
+                                            <div class="input-group input-group-outline <?php echo !empty($_GET['search']) ? 'is-filled' : ''; ?>">
+                                                <label class="form-label">Tìm kiếm theo tên...</label>
+                                                <input type="text" class="form-control" name="search" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-dark mb-0 me-2">Tìm</button>
+                                            <a href="<?php echo BASE_URL; ?>admin/dishes" class="btn btn-secondary mb-0">Bỏ lọc</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
                             <div class="table-responsive p-0">
                                 <table class="table align-items-center mb-0">
                                     <thead>
@@ -66,12 +96,11 @@
                                                     <p class="text-xs font-weight-bold mb-0"><?php echo htmlspecialchars($dish['category_name'] ?? 'N/A'); ?></p>
                                                 </td>
                                                 <td class="align-middle text-center text-sm">
-                                                    <span class="badge badge-sm bg-gradient-<?php echo $dish['status'] === 'Available' ? 'success' : 'secondary'; ?>"><?php echo $dish['status']; ?></span>
+                                                    <span class="badge badge-sm bg-gradient-<?php echo $dish['status'] === 'Available' ? 'success' : 'secondary'; ?>"><?php echo $dish['status'] === 'Available' ? 'Hiển thị' : 'Không hiển thị'; ?></span>
                                                 </td>
                                                 <td class="align-middle text-center"><span class="text-secondary text-xs font-weight-bold"><?php echo number_format($dish['price'], 0, ',', '.'); ?>đ</span></td>
                                                 <td class="align-middle">
                                                     <a href="javascript:;" class="text-secondary font-weight-bold text-xs" onclick='editDish(<?php echo json_encode($dish); ?>)'>Sửa</a>
-                                                    <a href="javascript:;" class="text-danger font-weight-bold text-xs ms-3" onclick='deleteDish(<?php echo $dish['id']; ?>)'>Xóa</a>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -104,13 +133,16 @@
                             <label class="form-label">Giá</label>
                             <input type="number" class="form-control" name="price" required>
                         </div>
-                        <div class="input-group input-group-outline mb-3">
-                            <label class="form-label">Mô tả</label>
-                            <textarea class="form-control" name="description" rows="3"></textarea>
+                        <div class="input-group input-group-static mb-3">
+                            <label>Mô tả</label>
+                            <textarea class="form-control" name="description" rows="3" id="add_description"></textarea>
                         </div>
-                        <div class="input-group input-group-outline mb-3">
-                            <label class="form-label">URL hình ảnh</label>
-                            <input type="url" class="form-control" name="image">
+
+                        <div class="mb-3">
+                            <label for="add_image_upload" class="form-label">Tải lên hình ảnh</label>
+                            <input class="form-control" type="file" id="add_image_upload" accept="image/jpeg,image/png,image/gif">
+                            <div id="add_image_preview" class="mt-2"></div>
+                            <input type="hidden" name="image" id="add_image_url">
                         </div>
                         <div class="input-group input-group-static mb-3">
                             <label for="add_category" class="ms-0">Danh mục</label>
@@ -124,8 +156,8 @@
                         <div class="input-group input-group-static mb-3">
                             <label for="add_status" class="ms-0">Trạng thái</label>
                             <select class="form-control" id="add_status" name="status">
-                                <option value="Available">Available</option>
-                                <option value="Unavailable">Unavailable</option>
+                                <option value="Available">Hiển thị</option>
+                                <option value="Unavailable">Không hiển thị</option>
                             </select>
                         </div>
                     </div>
@@ -161,9 +193,14 @@
                             <label class="form-label">Mô tả</label>
                             <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
                         </div>
-                        <div class="input-group input-group-outline mb-3 is-filled">
-                            <label class="form-label">URL hình ảnh</label>
-                            <input type="url" class="form-control" id="edit_image" name="image">
+
+
+
+                        <div class="mb-3">
+                            <label class="form-label">Cập nhật hình ảnh</label>
+                            <div id="edit_image_preview" class="mb-2"></div>
+                            <input class="form-control" type="file" id="edit_image_upload" accept="image/jpeg,image/png,image/gif">
+                            <input type="hidden" name="image" id="edit_image_url">
                         </div>
                         <div class="input-group input-group-static mb-3">
                             <label for="edit_category" class="ms-0">Danh mục</label>
@@ -176,8 +213,8 @@
                         <div class="input-group input-group-static mb-3">
                             <label for="edit_status" class="ms-0">Trạng thái</label>
                             <select class="form-control" id="edit_status" name="status">
-                                <option value="Available">Available</option>
-                                <option value="Unavailable">Unavailable</option>
+                                <option value="Available">Hiển thị</option>
+                                <option value="Unavailable">Không hiển thị</option>
                             </select>
                         </div>
                     </div>
@@ -190,13 +227,75 @@
         </div>
     </div>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/core/popper.min.js"></script>
     <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/core/bootstrap.min.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/plugins/perfect-scrollbar.min.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/plugins/bootstrap-notify.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/material-dashboard/material-dashboard.min.js"></script>
     <script>
+        const BASE_URL = '<?php echo rtrim(BASE_URL, '/'); ?>/';
         let addModal, editModal;
+
+        function showNotification(message, type) {
+            $.notify({
+                icon: type === 'success' ? "done" : "warning",
+                message: message
+            }, {
+                type: type,
+                timer: 3000,
+                placement: {
+                    from: 'top',
+                    align: 'right'
+                }
+            });
+        }
+
+        function handleImageUpload(event, previewContainerId, urlInputId) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('dish_image', file);
+
+            const previewContainer = document.getElementById(previewContainerId);
+            previewContainer.innerHTML = '<p class="text-muted">Đang tải ảnh lên...</p>';
+
+            fetch(BASE_URL + 'api/dish_image_upload.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const imageUrl = data.image_url.startsWith('/') ? data.image_url : '/' + data.image_url;
+                        previewContainer.innerHTML = `<img src="${BASE_URL}${imageUrl.substring(1)}" class="avatar avatar-xl me-3 border-radius-lg" alt="Image Preview">`;
+                        document.getElementById(urlInputId).value = imageUrl;
+                    } else {
+                        previewContainer.innerHTML = `<p class="text-danger">Lỗi: ${data.message}</p>`;
+                        showNotification(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Image upload error:', error);
+                    previewContainer.innerHTML = '<p class="text-danger">Đã có lỗi xảy ra khi tải ảnh lên.</p>';
+                    showNotification('Lỗi không xác định khi tải ảnh.', 'danger');
+                });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             addModal = new bootstrap.Modal(document.getElementById('addDishModal'));
             editModal = new bootstrap.Modal(document.getElementById('editDishModal'));
+
+            const addImageUploadInput = document.getElementById('add_image_upload');
+            if (addImageUploadInput) {
+                addImageUploadInput.addEventListener('change', (event) => handleImageUpload(event, 'add_image_preview', 'add_image_url'));
+            }
+
+            const editImageUploadInput = document.getElementById('edit_image_upload');
+            if (editImageUploadInput) {
+                editImageUploadInput.addEventListener('change', (event) => handleImageUpload(event, 'edit_image_preview', 'edit_image_url'));
+            }
         });
 
         function addDish(event) {
@@ -204,15 +303,25 @@
             const form = document.getElementById('addDishForm');
             const formData = new FormData(form);
 
-            fetch('/admin/createDish', {
+            fetch(BASE_URL + 'api/admin/dish/create', {
                     method: 'POST',
                     body: new URLSearchParams(formData)
                 })
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.message);
+                    $.notify({
+                        icon: data.success ? "done" : "warning",
+                        message: data.message
+                    }, {
+                        type: data.success ? 'success' : 'danger',
+                        timer: 3000,
+                        placement: {
+                            from: 'top',
+                            align: 'right'
+                        }
+                    });
                     if (data.success) {
-                        location.reload();
+                        setTimeout(() => location.reload(), 1500);
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -225,7 +334,16 @@
             document.getElementById('edit_description').value = dish.description || '';
             document.getElementById('edit_category').value = dish.category_id || '';
             document.getElementById('edit_status').value = dish.status;
-            document.getElementById('edit_image').value = dish.image || '';
+
+            const imageUrl = dish.image || '';
+            document.getElementById('edit_image_url').value = imageUrl;
+            const previewContainer = document.getElementById('edit_image_preview');
+            if (imageUrl) {
+                previewContainer.innerHTML = `<img src="${imageUrl}" class="avatar avatar-xl me-3 border-radius-lg" alt="Image Preview">`;
+            } else {
+                previewContainer.innerHTML = '<p class="text-muted">Chưa có ảnh.</p>';
+            }
+
             editModal.show();
         }
 
@@ -234,35 +352,25 @@
             const form = document.getElementById('editDishForm');
             const formData = new FormData(form);
 
-            fetch('/admin/updateDish', {
+            fetch(BASE_URL + 'api/admin/dish/update', {
                     method: 'POST',
                     body: new URLSearchParams(formData)
                 })
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.message);
+                    $.notify({
+                        icon: data.success ? "done" : "warning",
+                        message: data.message
+                    }, {
+                        type: data.success ? 'success' : 'danger',
+                        timer: 3000,
+                        placement: {
+                            from: 'top',
+                            align: 'right'
+                        }
+                    });
                     if (data.success) {
-                        location.reload();
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        function deleteDish(dishId) {
-            if (!confirm('Bạn có chắc muốn xóa món ăn này?')) return;
-
-            fetch('/admin/deleteDish', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `dish_id=${dishId}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    if (data.success) {
-                        location.reload();
+                        setTimeout(() => location.reload(), 1500);
                     }
                 })
                 .catch(error => console.error('Error:', error));

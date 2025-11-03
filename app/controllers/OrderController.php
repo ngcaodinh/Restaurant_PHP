@@ -5,29 +5,57 @@ namespace App\Controllers;
 use Core\BaseController;
 use App\Models\Order;
 use App\Models\Cart;
+use App\Models\Dish;
 
-
+/**
+ * Class OrderController - Controller xử lý đơn hàng
+ *
+ * Quản lý các hoạt động liên quan đến đơn hàng như xem danh sách, xem chi tiết,
+ * thanh toán, tạo đơn hàng, và xác nhận đơn hàng.
+ */
 class OrderController extends BaseController
 {
+    /** @var Order Model Order để thao tác với dữ liệu đơn hàng */
     private Order $orderModel;
+    /** @var Cart Model Cart để thao tác với dữ liệu giỏ hàng */
     private Cart $cartModel;
+    /** @var Dish Model Dish để thao tác với dữ liệu món ăn */
+    private Dish $dishModel;
 
+    /**
+     * Constructor khởi tạo các model cần thiết
+     * @param \PDO $db Kết nối database
+     */
     public function __construct($db)
     {
         $this->orderModel = new Order($db);
         $this->cartModel = new Cart($db);
+        $this->dishModel = new Dish($db);
     }
 
+    /**
+     * Hiển thị danh sách đơn hàng của người dùng
+     *
+     * @return void
+     */
     public function index(): void
     {
+        // Kiểm tra quyền truy cập
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
 
+        // Lấy danh sách đơn hàng của người dùng hiện tại
         $userId = $_SESSION['user_id'];
         $orders = $this->orderModel->getUserOrders($userId);
 
+        // Hiển thị view
         $this->view('orders/index', compact('orders'));
     }
 
+    /**
+     * Hiển thị chi tiết một đơn hàng
+     *
+     * @return void
+     */
     public function show(): void
     {
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
@@ -39,6 +67,7 @@ class OrderController extends BaseController
             exit();
         }
 
+        // Admin có thể xem mọi đơn hàng, user chỉ xem được đơn hàng của mình
         $userId = $_SESSION['user_role'] === 'Admin' ? null : $_SESSION['user_id'];
         $order = $this->orderModel->getOrderDetails($orderId, $userId);
 
@@ -51,11 +80,18 @@ class OrderController extends BaseController
         $this->view('orders/show', compact('order'));
     }
 
+    /**
+     * Hiển thị trang thanh toán
+     *
+     * Lấy các sản phẩm đã được chọn từ giỏ hàng để hiển thị trên trang thanh toán.
+     * @return void
+     */
     public function checkout(): void
     {
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
         $userId = $_SESSION['user_id'];
 
+        // Xử lý khi người dùng nhấn "Thanh toán" từ trang giỏ hàng
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $selectedItemsJson = $_POST['selected_items'] ?? '[]';
             $selectedItemIds = json_decode($selectedItemsJson, true);
@@ -66,11 +102,13 @@ class OrderController extends BaseController
                 exit();
             }
 
+            // Lưu các sản phẩm được chọn vào session và chuyển hướng đến trang checkout (GET)
             $_SESSION['checkout_items'] = $selectedItemIds;
             header('Location: ' . BASE_URL . 'checkout');
             exit();
         }
 
+        // Lấy các sản phẩm đã chọn từ session để hiển thị
         $selectedItemIds = $_SESSION['checkout_items'] ?? [];
         if (empty($selectedItemIds)) {
             $_SESSION['error_message'] = 'Không có sản phẩm nào được chọn để thanh toán.';
@@ -78,17 +116,25 @@ class OrderController extends BaseController
             exit();
         }
 
+        // Lấy thông tin chi tiết của các sản phẩm được chọn
         $cartItems = $this->cartModel->getCartItemsByIds($selectedItemIds, $userId);
 
+        // Tính tổng tiền
         $cartTotal = 0;
         foreach ($cartItems as $item) {
             $cartTotal += $item['price'] * $item['quantity'];
         }
 
-
         $this->view('orders/checkout', compact('cartItems', 'cartTotal'));
     }
 
+    /**
+     * Xử lý tạo đơn hàng mới
+     *
+     * Nhận thông tin từ form thanh toán, kiểm tra dữ liệu, tạo đơn hàng trong database,
+     * và xóa các sản phẩm đã đặt khỏi giỏ hàng.
+     * @return void
+     */
     public function create(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -102,7 +148,6 @@ class OrderController extends BaseController
         $checkoutItemsJson = $_POST['checkout_items'] ?? '[]';
         $selectedItemIds = json_decode($checkoutItemsJson, true);
 
-        // Use the total price sent directly from the form
         $cartTotal = isset($_POST['total_price']) ? (float)$_POST['total_price'] : 0;
 
         if (empty($selectedItemIds) || $cartTotal <= 0) {
@@ -113,6 +158,19 @@ class OrderController extends BaseController
 
         $cartItems = $this->cartModel->getCartItemsByIds($selectedItemIds, $userId);
 
+        // Kiểm tra xem tất cả các món ăn có còn hàng không
+        $dishIds = array_column($cartItems, 'dish_id');
+        $unavailableDishes = $this->dishModel->getUnavailableDishes($dishIds);
+
+        if (!empty($unavailableDishes)) {
+            $unavailableDishNames = array_column($unavailableDishes, 'name');
+            $errorMessage = 'Các món sau không còn tồn tại hoặc đã hết: ' . implode(', ', $unavailableDishNames) . '. Vui lòng xóa chúng khỏi giỏ hàng và thử lại.';
+            $_SESSION['error_message'] = $errorMessage;
+            header('Location: ' . BASE_URL . 'cart');
+            exit();
+        }
+
+        // Validate thông tin giao hàng
         $deliveryAddress = trim($_POST['delivery_address'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
         $notes = trim($_POST['notes'] ?? '');
@@ -133,7 +191,7 @@ class OrderController extends BaseController
             exit();
         }
 
-
+        // Chuẩn bị dữ liệu để tạo đơn hàng
         $orderData = [
             'total_price' => $cartTotal,
             'delivery_address' => $deliveryAddress,
@@ -141,11 +199,12 @@ class OrderController extends BaseController
             'notes' => $notes
         ];
 
+        // Tạo đơn hàng
         $orderId = $this->orderModel->createOrder($userId, $orderData, $cartItems);
 
         if ($orderId) {
-
             $_SESSION['success_message'] = 'Đã đặt hàng thành công!';
+            // Xóa các sản phẩm đã đặt khỏi giỏ hàng
             $this->cartModel->removeItemsByIds($selectedItemIds);
             header('Location: ' . BASE_URL . 'order-confirmation?id=' . $orderId);
         } else {
@@ -155,6 +214,11 @@ class OrderController extends BaseController
         exit();
     }
 
+    /**
+     * Hiển thị trang xác nhận đơn hàng
+     *
+     * @return void
+     */
     public function confirmation(): void
     {
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
@@ -179,6 +243,11 @@ class OrderController extends BaseController
         $this->view('orders/confirmation', compact('order'));
     }
 
+    /**
+     * Hủy đơn hàng (AJAX)
+     *
+     * @return void
+     */
     public function cancel(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -204,6 +273,11 @@ class OrderController extends BaseController
         }
     }
 
+    /**
+     * Cập nhật trạng thái đơn hàng (AJAX, chỉ dành cho Admin)
+     *
+     * @return void
+     */
     public function updateStatus(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -228,6 +302,12 @@ class OrderController extends BaseController
         }
     }
 
+    /**
+     * Kiểm tra quyền truy cập của người dùng
+     *
+     * @param array $allowedRoles Các vai trò được phép
+     * @return void
+     */
     private function checkAuth(array $allowedRoles): void
     {
         if (!isset($_SESSION['user_id'])) {
@@ -243,6 +323,12 @@ class OrderController extends BaseController
         }
     }
 
+    /**
+     * Trả về phản hồi dạng JSON
+     *
+     * @param array $data Dữ liệu cần trả về
+     * @return void
+     */
     private function jsonResponse(array $data): void
     {
         header('Content-Type: application/json');

@@ -1,3 +1,9 @@
+/**
+ * Tệp JavaScript xử lý trang chi tiết đơn hàng
+ * Xử lý hiển thị thông tin đơn hàng và hủy đơn hàng
+ */
+
+/** Hủy đơn hàng */
 function cancelOrder(orderId) {
     if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
 

@@ -1,7 +1,12 @@
+/**
+ * Tệp JavaScript xử lý trang yêu thích
+ * Xử lý thêm vào giỏ hàng và xóa khỏi danh sách yêu thích
+ */
+
 document.addEventListener('DOMContentLoaded', function () {
     const favoriteItemsContainer = document.getElementById('favorite-items');
 
-    // Handle Add to Cart
+    /** Xử lý thêm món vào giỏ hàng từ danh sách yêu thích */
     favoriteItemsContainer.addEventListener('click', function (event) {
         const addToCartButton = event.target.closest('.add-to-cart-btn');
         if (addToCartButton) {
@@ -10,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Handle Remove from Favorites via AJAX
+    /** Xử lý xóa món khỏi danh sách yêu thích qua AJAX */
     favoriteItemsContainer.addEventListener('submit', function (event) {
         if (event.target.matches('.remove-form')) {
             event.preventDefault();

@@ -18,6 +18,12 @@
     <!-- Base URL for JavaScript -->
     <script>
         const BASE_URL = '<?php echo BASE_URL; ?>';
+        <?php
+        if (isset($_SESSION['error_message'])) {
+            echo 'const sessionErrorMessage = ' . json_encode($_SESSION['error_message']) . ';';
+            unset($_SESSION['error_message']);
+        }
+        ?>
     </script>
 </head>
 
@@ -43,14 +49,7 @@
                         <p class="mb-0">Chọn món và thanh toán dễ dàng</p>
                     </div>
 
-                    <?php if (isset($_SESSION['error_message'])): ?>
-                        <div class="alert alert-danger mx-3">
-                            <?php
-                            echo $_SESSION['error_message'];
-                            unset($_SESSION['error_message']);
-                            ?>
-                        </div>
-                    <?php endif; ?>
+
 
                     <?php if (!empty($cart_items)): ?>
                         <!-- Select All Section -->
