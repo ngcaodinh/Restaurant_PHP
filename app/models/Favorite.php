@@ -4,19 +4,36 @@ namespace App\Models;
 
 use PDO;
 
+/**
+ * Class Favorite - Model quản lý món ăn yêu thích
+ *
+ * Xử lý các thao tác liên quan đến món ăn yêu thích của người dùng.
+ */
 class Favorite
 {
+    /** @var PDO Đối tượng kết nối CSDL */
     private $pdo;
 
+    /**
+     * Constructor.
+     *
+     * Khởi tạo kết nối CSDL.
+     */
     public function __construct()
     {
-        // Ensure the Database class is available
+        // Đảm bảo class Database đã được tải
         if (!class_exists('Database')) {
             require_once __DIR__ . '/../../includes/db_connect.php';
         }
         $this->pdo = \Database::getInstance();
     }
 
+    /**
+     * Lấy danh sách món ăn yêu thích của người dùng.
+     *
+     * @param int $userId ID của người dùng.
+     * @return array Mảng các món ăn yêu thích.
+     */
     public function getFavoritesByUserId($userId)
     {
         try {

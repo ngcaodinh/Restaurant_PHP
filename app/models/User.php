@@ -132,17 +132,24 @@ class User
         }
     }
 
+    /**
+     * Cập nhật thông tin người dùng.
+     *
+     * @param int $id ID người dùng.
+     * @param array $data Dữ liệu cần cập nhật.
+     * @return bool
+     */
     public function update(int $id, array $data): bool
     {
         try {
             $fields = [];
             $values = [];
 
-            // Handle password separately for hashing
+            // Xử lý mật khẩu riêng để hash
             if (!empty($data['password'])) {
                 $fields[] = "password = ?";
                 $values[] = password_hash($data['password'], PASSWORD_DEFAULT);
-                unset($data['password']); // Unset to avoid processing it again
+                unset($data['password']);
             }
 
             foreach (['name', 'email', 'phone', 'address', 'avatar_url', 'role', 'status'] as $field) {
@@ -168,6 +175,13 @@ class User
         }
     }
 
+    /**
+     * Cập nhật mật khẩu người dùng.
+     *
+     * @param int $id ID người dùng.
+     * @param string $hashedPassword Mật khẩu đã được hash.
+     * @return bool
+     */
     public function updatePassword(int $id, string $hashedPassword): bool
     {
         try {
@@ -180,6 +194,13 @@ class User
         }
     }
 
+    /**
+     * Lấy tất cả người dùng (cho admin).
+     *
+     * @param int $limit Giới hạn số lượng.
+     * @param int $offset Vị trí bắt đầu.
+     * @return array
+     */
     public function getAllUsers(int $limit = 50, int $offset = 0): array
     {
         $stmt = $this->db->prepare("
@@ -193,6 +214,12 @@ class User
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Xóa mềm một người dùng.
+     *
+     * @param int $id ID người dùng.
+     * @return bool
+     */
     public function deleteUser(int $id): bool
     {
         try {
@@ -205,16 +232,21 @@ class User
         }
     }
 
+    /**
+     * Lấy thống kê về người dùng cho dashboard admin.
+     *
+     * @return array
+     */
     public function getUserStats(): array
     {
         $stats = [];
 
-        // Total users
+        // Tổng số người dùng
         $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM users WHERE deleted_at IS NULL");
         $stmt->execute();
         $stats['total_users'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-        // Users by role
+        // Người dùng theo vai trò
         $stmt = $this->db->prepare("SELECT role, COUNT(*) as count FROM users WHERE deleted_at IS NULL GROUP BY role");
         $stmt->execute();
         $roleCounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -223,22 +255,22 @@ class User
             $stats['by_role'][$row['role']] = $row['count'];
         }
 
-        // Active users (logged in within last 30 days)
+        // Người dùng hoạt động (đăng nhập trong 30 ngày qua)
         $stmt = $this->db->prepare("SELECT COUNT(*) as active FROM users WHERE deleted_at IS NULL AND last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
         $stmt->execute();
         $stats['active_users'] = $stmt->fetch(PDO::FETCH_ASSOC)['active'];
 
-        // New users this month
+        // Người dùng mới trong tháng này
         $stmt = $this->db->prepare("SELECT COUNT(*) as new_this_month FROM users WHERE deleted_at IS NULL AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')");
         $stmt->execute();
         $newThisMonth = $stmt->fetch(PDO::FETCH_ASSOC)['new_this_month'];
 
-        // New users last month
+        // Người dùng mới tháng trước
         $stmt = $this->db->prepare("SELECT COUNT(*) as new_last_month FROM users WHERE deleted_at IS NULL AND created_at >= DATE_FORMAT(NOW() - INTERVAL 1 MONTH, '%Y-%m-01') AND created_at < DATE_FORMAT(NOW(), '%Y-%m-01')");
         $stmt->execute();
         $newLastMonth = $stmt->fetch(PDO::FETCH_ASSOC)['new_last_month'];
 
-        // Growth percentage
+        // Tỷ lệ tăng trưởng
         if ($newLastMonth > 0) {
             $stats['user_growth'] = (($newThisMonth - $newLastMonth) / $newLastMonth) * 100;
         } else {
@@ -248,6 +280,12 @@ class User
         return $stats;
     }
 
+    /**
+     * Tạo người dùng mới từ thông tin Google.
+     *
+     * @param array $data Dữ liệu người dùng từ Google.
+     * @return int|null ID của người dùng mới hoặc null nếu lỗi.
+     */
     public function createGoogleUser(array $data): ?int
     {
         try {
@@ -267,6 +305,12 @@ class User
         }
     }
 
+    /**
+     * Tìm người dùng theo Google ID.
+     *
+     * @param string $googleId ID Google của người dùng.
+     * @return array|null
+     */
     public function findByGoogleId(string $googleId): ?array
     {
         $stmt = $this->db->prepare("SELECT * FROM users WHERE google_id = ? AND deleted_at IS NULL");

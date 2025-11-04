@@ -5,11 +5,23 @@ namespace App\Models;
 use PDO;
 use Exception;
 
+/**
+ * Class Cart - Model quản lý giỏ hàng
+ *
+ * Xử lý các thao tác với giỏ hàng trong cơ sở dữ liệu.
+ */
 class Cart
 {
+    /** @var PDO Đối tượng kết nối CSDL */
     private $db;
+    /** @var int|null ID của người dùng hiện tại */
     private $user_id;
 
+    /**
+     * Constructor.
+     *
+     * @param PDO $db Đối tượng PDO.
+     */
     public function __construct($db)
     {
         $this->db = $db;
@@ -18,6 +30,11 @@ class Cart
         }
     }
 
+    /**
+     * Lấy hoặc tạo ID giỏ hàng cho người dùng.
+     *
+     * @return int ID của giỏ hàng.
+     */
     private function getCartId()
     {
         $stmt = $this->db->prepare("SELECT id FROM carts WHERE user_id = ?");
@@ -33,6 +50,13 @@ class Cart
         }
     }
 
+    /**
+     * Thêm sản phẩm vào giỏ hàng.
+     *
+     * @param int $productId ID sản phẩm.
+     * @param int $quantity Số lượng.
+     * @return bool
+     */
     public function addToCart($productId, $quantity)
     {
         $cart_id = $this->getCartId();
@@ -50,6 +74,13 @@ class Cart
         }
     }
 
+    /**
+     * Cập nhật số lượng của một sản phẩm trong giỏ hàng.
+     *
+     * @param int $cartItemId ID của sản phẩm trong giỏ hàng.
+     * @param int $quantity Số lượng mới.
+     * @return bool
+     */
     public function updateQuantity($cartItemId, $quantity)
     {
         $stmt = $this->db->prepare("SELECT ci.id FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE ci.id = ? AND c.user_id = ?");
@@ -63,6 +94,12 @@ class Cart
         return false;
     }
 
+    /**
+     * Xóa một sản phẩm khỏi giỏ hàng.
+     *
+     * @param int $cartItemId ID của sản phẩm trong giỏ hàng.
+     * @return bool
+     */
     public function removeFromCart($cartItemId)
     {
         $stmt = $this->db->prepare("SELECT ci.id FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE ci.id = ? AND c.user_id = ?");
@@ -76,6 +113,11 @@ class Cart
         return false;
     }
 
+    /**
+     * Lấy tất cả sản phẩm trong giỏ hàng của người dùng.
+     *
+     * @return array
+     */
     public function getCartContents()
     {
         $userId = $_SESSION['user_id'] ?? null;
@@ -93,10 +135,18 @@ class Cart
             $stmt->execute([$userId]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
+            error_log('Error fetching cart contents: ' . $e->getMessage());
             return [];
         }
     }
 
+    /**
+     * Lấy các sản phẩm trong giỏ hàng theo danh sách ID.
+     *
+     * @param array $itemIds Mảng các ID sản phẩm trong giỏ hàng.
+     * @param int $userId ID người dùng.
+     * @return array
+     */
     public function getCartItemsByIds(array $itemIds, int $userId)
     {
         if (empty($itemIds)) {
@@ -125,6 +175,12 @@ class Cart
         }
     }
 
+    /**
+     * Xóa các sản phẩm khỏi giỏ hàng theo danh sách ID.
+     *
+     * @param array $itemIds Mảng các ID sản phẩm trong giỏ hàng.
+     * @return bool
+     */
     public function removeItemsByIds(array $itemIds)
     {
         if (empty($itemIds)) {
@@ -141,7 +197,7 @@ class Cart
         $cart = $cartIdStmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$cart) {
-            return true; // No cart, so nothing to remove
+            return true; // Không có giỏ hàng, không có gì để xóa
         }
         $cartId = $cart['id'];
 
@@ -159,6 +215,11 @@ class Cart
         }
     }
 
+    /**
+     * Tính tổng tiền của giỏ hàng.
+     *
+     * @return float
+     */
     public function calculateSubtotal()
     {
         $total = 0;
@@ -169,6 +230,11 @@ class Cart
         return $total;
     }
 
+    /**
+     * Xóa toàn bộ giỏ hàng.
+     *
+     * @return bool
+     */
     public function clearCart()
     {
         $cart_id = $this->getCartId();

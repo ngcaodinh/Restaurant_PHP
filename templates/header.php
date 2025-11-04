@@ -1,17 +1,27 @@
 <?php
+
+/**
+ * Template cho phần Header của trang web
+ *
+ * Chứa logo, thanh tìm kiếm, menu điều hướng, và các icon chức năng
+ * như giỏ hàng, danh sách yêu thích, và menu người dùng.
+ */
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Tải các tệp cần thiết
 require_once 'includes/config.php';
 require_once 'includes/db_connect.php';
 require_once 'includes/functions.php';
 require_once 'includes/auth.php';
 
-// Đếm số lượng giỏ hàng và danh sách yêu thích
+// Đếm số lượng sản phẩm trong giỏ hàng và danh sách yêu thích từ session
 $cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 $wishlist_count = isset($_SESSION['wishlist']) ? count($_SESSION['wishlist']) : 0;
 
-// Lấy thông tin người dùng
+// Lấy tên người dùng nếu đã đăng nhập
 $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
 ?>
 
