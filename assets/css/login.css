@@ -79,8 +79,13 @@ body {
 }
 
 @keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
 }
 
 @keyframes slideUp {
@@ -89,10 +94,39 @@ body {
         transform: translateY(50px) scale(0.95);
         filter: blur(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
         filter: blur(0);
+    }
+}
+
+/* Login Icon */
+.login-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
     }
 }
 
@@ -116,8 +150,15 @@ body {
 }
 
 @keyframes gradientMove {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
 }
 
 .login-subtitle {
@@ -298,9 +339,17 @@ body {
 }
 
 @keyframes pulse {
-    0% { transform: translateY(-1px) scale(1.01); }
-    50% { transform: translateY(-2px) scale(1.03); }
-    100% { transform: translateY(-1px) scale(1.01); }
+    0% {
+        transform: translateY(-1px) scale(1.01);
+    }
+
+    50% {
+        transform: translateY(-2px) scale(1.03);
+    }
+
+    100% {
+        transform: translateY(-1px) scale(1.01);
+    }
 }
 
 .login-button:disabled {
@@ -327,7 +376,9 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .divider {
@@ -419,6 +470,125 @@ body {
 
 .register-link a:hover::after {
     width: 100%;
+}
+
+/* Password Input Wrapper */
+.password-input-wrapper {
+    position: relative;
+}
+
+/* Form Hint */
+.form-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.form-hint i {
+    color: #ffa500;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+    margin-bottom: 25px;
+}
+
+.strength-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.strength-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: #e5e7eb;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.strength-text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Login Footer */
+.login-footer {
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.info-box {
+    text-align: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.info-box i {
+    font-size: 1.5rem;
+    color: #10b981;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.info-box p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Security Tips */
+.security-tips {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.security-tips h4 {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1rem;
+    margin-bottom: 15px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.security-tips h4 i {
+    color: #ffa500;
+}
+
+.security-tips ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.security-tips ul li {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    padding-left: 5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.security-tips ul li:last-child {
+    margin-bottom: 0;
+}
+
+.security-tips ul li i {
+    color: #10b981;
+    margin-right: 5px;
 }
 
 .error-message {

@@ -71,11 +71,12 @@ $user_name = is_logged_in() ? ($_SESSION['user_name'] ?? 'Khách') : '';
                         <?php if (is_logged_in()): ?>
                             <a href="<?php echo BASE_URL; ?>user/profile"><i class="fas fa-user-circle"></i> Hồ sơ (<?php echo htmlspecialchars($user_name); ?>)</a>
                             <?php if (is_admin()): ?>
-                                <a href="/Restaurant_PHP/admin_dashboard.php"><i class="fas fa-cog"></i> Bảng điều khiển Quản trị</a>
-                                <a href="/Restaurant_PHP/admin_users.php"><i class="fas fa-users"></i> Quản lý người dùng</a>
-                            <?php endif; ?>
-                            <?php if (is_premium_or_admin()): ?>
-                                <a href="/Restaurant_PHP/dish_manage.php"><i class="fas fa-utensils"></i> Quản lý món ăn</a>
+                                <a href="<?php echo BASE_URL; ?>admin/dashboard"><i class="fas fa-cog"></i> Bảng điều khiển Quản trị</a>
+                                <a href="<?php echo BASE_URL; ?>admin/users"><i class="fas fa-users"></i> Quản lý người dùng</a>
+                            <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'PremiumUser'): ?>
+                                <a href="<?php echo BASE_URL; ?>premium/dashboard"><i class="fas fa-cog"></i> Bảng điều khiển Premium</a>
+                                <a href="<?php echo BASE_URL; ?>premium/dishes"><i class="fas fa-utensils"></i> Quản lý món ăn</a>
+                                <a href="<?php echo BASE_URL; ?>premium/orders"><i class="fas fa-receipt"></i> Quản lý đơn hàng</a>
                             <?php endif; ?>
                             <a href="<?php echo BASE_URL . 'cart'; ?>"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
                             <a href="/Restaurant_PHP/checkout.php"><i class="fas fa-credit-card"></i> Thanh toán</a>

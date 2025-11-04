@@ -146,8 +146,10 @@ class Router
             } else {
                 $controller = new $class();
             }
-            // Lưu các tham số route vào $_GET để controller có thể truy cập
+            // Hợp nhất các tham số từ URL vào $_GET để controller có thể truy cập
             $_GET = array_merge($_GET, $params);
+
+            // Gọi phương thức của controller
             return $controller->$methodName();
         }
 

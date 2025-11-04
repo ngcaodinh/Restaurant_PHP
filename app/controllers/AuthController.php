@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+
 use Core\BaseController;
 use App\Models\User;
 use Database;
@@ -41,14 +42,14 @@ class AuthController extends BaseController
         // Lấy thông báo lỗi từ session (nếu có)
         $errors = $_SESSION['login_errors'] ?? [];
         $authError = $_SESSION['error_message'] ?? '';
-        $success = '';
-        unset($_SESSION['login_errors'], $_SESSION['error_message']);
+        $success = $_SESSION['login_success'] ?? '';
+        unset($_SESSION['login_errors'], $_SESSION['error_message'], $_SESSION['login_success']);
 
         // Nếu đã đăng nhập, chuyển hướng đến trang phù hợp
         if (isset($_SESSION['user_id'])) {
             $redirectUrl = match ($_SESSION['user_role']) {
                 'Admin' => BASE_URL . 'admin',
-                'PremiumUser' => BASE_URL,
+                'PremiumUser' => BASE_URL . 'premium/dashboard',
                 'User' => BASE_URL,
                 default => BASE_URL
             };
@@ -147,7 +148,7 @@ class AuthController extends BaseController
                         // Xác định URL chuyển hướng dựa trên vai trò
                         $redirectUrl = match ($user['role']) {
                             'Admin' => BASE_URL . 'admin',
-                            'PremiumUser' => BASE_URL,
+                            'PremiumUser' => BASE_URL . 'premium/dashboard',
                             'User' => BASE_URL,
                             default => BASE_URL
                         };
@@ -356,6 +357,164 @@ class AuthController extends BaseController
 
         $_SESSION['admin_login_errors'] = $errors;
         header('Location: /admin/login');
+        exit();
+    }
+
+    /**
+     * Hiển thị trang quên mật khẩu (Bước 1: Nhập email/SĐT)
+     *
+     * @return void
+     */
+    public function showForgotPassword(): void
+    {
+        $errors = $_SESSION['forgot_password_errors'] ?? [];
+        $success = $_SESSION['forgot_password_success'] ?? '';
+        unset($_SESSION['forgot_password_errors'], $_SESSION['forgot_password_success']);
+
+        $this->view('auth/forgot_password', compact('errors', 'success'));
+    }
+
+    /**
+     * Xử lý xác minh email/SĐT (Bước 1)
+     *
+     * @return void
+     */
+    public function verifyAccount(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /forgot-password');
+            exit();
+        }
+
+        $emailOrPhone = $this->sanitizeInput(strtolower($_POST['email'] ?? ''));
+        $errors = [];
+
+        // Validate input
+        if (empty($emailOrPhone)) {
+            $errors[] = 'Vui lòng nhập email hoặc số điện thoại';
+        } else {
+            $emailRegex = '/^[a-z0-9._%+-]+@gmail\.com$/';
+            $phoneRegex = '/^(\+84|84|0)[3-9][0-9]{8}$/';
+            $isEmail = preg_match($emailRegex, $emailOrPhone);
+            $isPhone = preg_match($phoneRegex, $emailOrPhone);
+
+            if (!$isEmail && !$isPhone) {
+                $errors[] = 'Email phải có đuôi @gmail.com hoặc số điện thoại phải đúng 10 số';
+            }
+        }
+
+        // Nếu không có lỗi validation, kiểm tra tài khoản trong DB
+        if (empty($errors)) {
+            try {
+                // Chuẩn hóa input
+                $normalizedInput = $isPhone ? preg_replace('/^\+84|84/', '0', $emailOrPhone) : $emailOrPhone;
+                $user = $this->userModel->findByEmailOrPhone($normalizedInput);
+
+                if ($user && $user['status'] === 'Active' && empty($user['deleted_at'])) {
+                    // Lưu thông tin vào session để dùng ở bước 2
+                    $_SESSION['reset_user_id'] = $user['id'];
+                    $_SESSION['reset_email_or_phone'] = $normalizedInput;
+
+                    // Chuyển sang bước 2
+                    header('Location: ' . BASE_URL . 'reset-password');
+                    exit();
+                } else {
+                    $errors[] = 'Email hoặc số điện thoại không tồn tại hoặc tài khoản không hoạt động';
+                }
+            } catch (\Exception $e) {
+                $errors[] = 'Lỗi hệ thống. Vui lòng thử lại sau.';
+                error_log("Verify account error: " . $e->getMessage());
+            }
+        }
+
+        $_SESSION['forgot_password_errors'] = $errors;
+        header('Location: ' . BASE_URL . 'forgot-password');
+        exit();
+    }
+
+    /**
+     * Hiển thị trang đặt lại mật khẩu (Bước 2: Nhập mật khẩu mới)
+     *
+     * @return void
+     */
+    public function showResetPassword(): void
+    {
+        // Kiểm tra xem đã xác minh tài khoản chưa
+        if (!isset($_SESSION['reset_user_id']) || !isset($_SESSION['reset_email_or_phone'])) {
+            header('Location: ' . BASE_URL . 'forgot-password');
+            exit();
+        }
+
+        $errors = $_SESSION['reset_password_errors'] ?? [];
+        $success = $_SESSION['reset_password_success'] ?? '';
+        unset($_SESSION['reset_password_errors'], $_SESSION['reset_password_success']);
+
+        $this->view('auth/reset_password', compact('errors', 'success'));
+    }
+
+    /**
+     * Xử lý đặt lại mật khẩu (Bước 2)
+     *
+     * @return void
+     */
+    public function resetPassword(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'reset-password');
+            exit();
+        }
+
+        // Kiểm tra session
+        if (!isset($_SESSION['reset_user_id']) || !isset($_SESSION['reset_email_or_phone'])) {
+            header('Location: ' . BASE_URL . 'forgot-password');
+            exit();
+        }
+
+        $password = $_POST['password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+        $userId = $_SESSION['reset_user_id'];
+        $errors = [];
+
+        // Validate mật khẩu mới
+        if (empty($password)) {
+            $errors[] = 'Vui lòng nhập mật khẩu mới';
+        } elseif (strlen($password) < 8) {
+            $errors[] = 'Mật khẩu phải có ít nhất 8 ký tự';
+        } elseif (
+            !preg_match('/[A-Z]/', $password) ||
+            !preg_match('/[a-z]/', $password) ||
+            !preg_match('/[0-9]/', $password) ||
+            !preg_match('/[!@#$%^&*]/', $password)
+        ) {
+            $errors[] = 'Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt (!@#$%^&*)';
+        } elseif ($password !== $confirmPassword) {
+            $errors[] = 'Mật khẩu xác nhận không khớp';
+        }
+
+        // Nếu không có lỗi, cập nhật mật khẩu
+        if (empty($errors)) {
+            try {
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $updated = $this->userModel->updatePassword($userId, $hashedPassword);
+
+                if ($updated) {
+                    // Xóa session sau khi hoàn tất
+                    unset($_SESSION['reset_user_id'], $_SESSION['reset_email_or_phone']);
+
+                    $_SESSION['login_success'] = 'Mật khẩu đã được đặt lại thành công! Vui lòng đăng nhập.';
+                    header('Location: ' . BASE_URL . 'login');
+                    exit();
+                } else {
+                    $errors[] = 'Không thể cập nhật mật khẩu. Vui lòng thử lại.';
+                }
+            } catch (\Exception $e) {
+                $errors[] = 'Lỗi hệ thống. Vui lòng thử lại sau.';
+                error_log("Reset password error: " . $e->getMessage());
+            }
+        }
+
+        $_SESSION['reset_password_errors'] = $errors;
+        header('Location: ' . BASE_URL . 'reset-password');
         exit();
     }
 
