@@ -133,12 +133,15 @@ function showDetails(dishId) {
     const modalPrice = document.getElementById('modalPrice');
     const modalImage = document.getElementById('modalImage');
     const productModal = document.getElementById('productModal');
+    const buyNowBtn = document.querySelector('#productModal .btn-buy-now');
 
-    if (modalTitle && modalDescription && modalPrice && modalImage && productModal) {
+    if (modalTitle && modalDescription && modalPrice && modalImage && productModal && buyNowBtn) {
         modalTitle.textContent = product.name;
         modalDescription.textContent = product.description;
         modalPrice.textContent = product.price;
         modalImage.src = product.image;
+        // Cập nhật dishId cho nút "Mua ngay" trong modal
+        buyNowBtn.setAttribute('onclick', `buyNow(${dishId})`);
         productModal.style.display = 'block';
 
         const modalImageContainer = modalImage.parentElement;
@@ -282,34 +285,44 @@ function closeModal() {
 }
 
 function buyNow(dishId) {
-    if (dishId || currentProductId) {
-        const id = dishId || currentProductId;
-        const dish = products[id];
-        if (!dish) {
-            showNotification('⚠️ Món ăn không tồn tại!', 'error');
-            return;
-        }
-        sendAjaxRequest('buy_now', id, (response) => {
-            console.log('Buy now response:', response);
-            if (response.success) {
-                showNotification(`✅ Đã thêm "${dish.name}" vào giỏ hàng!`, 'success');
-                showNotification('Đang chuyển đến trang thanh toán...', 'info');
-                cart = [{ ...dish, quantity: 1 }];
-                updateCounters();
-                setTimeout(() => {
-                    window.location.href = BASE_URL + 'checkout.php';
-                }, 1000);
-                closeModal();
-            } else {
-                showNotification(response.message || '⚠️ Lỗi khi thêm món vào giỏ hàng!', 'error');
-                if (response.message.includes('đăng nhập')) {
-                    setTimeout(() => {
-                        window.location.href = BASE_URL + 'login.php';
-                    }, 1000);
-                }
-            }
-        });
+    const id = dishId || currentProductId;
+    if (!id) {
+        showNotification('⚠️ Không xác định được món ăn!', 'error');
+        return;
     }
+
+    showNotification('Đang xử lý...', 'info');
+
+    const xhr = new XMLHttpRequest();
+    // Gọi đến route mới trong OrderController
+    xhr.open('POST', `${BASE_URL}order/buyNow`, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success && response.redirect_url) {
+                    showNotification('✅ Đã thêm vào giỏ! Đang chuyển đến trang thanh toán...', 'success');
+                    // Chuyển hướng đến trang thanh toán
+                    window.location.href = response.redirect_url;
+                } else {
+                    showNotification(response.message || 'Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+                }
+            } catch (e) {
+                showNotification('Lỗi xử lý phản hồi từ máy chủ.', 'error');
+            }
+        } else {
+            showNotification('Lỗi máy chủ. Vui lòng thử lại sau.', 'error');
+        }
+    };
+
+    xhr.onerror = function () {
+        showNotification('Lỗi kết nối. Vui lòng kiểm tra lại mạng.', 'error');
+    };
+
+    xhr.send(`product_id=${id}`);
 }
 
 function toggleCart() {

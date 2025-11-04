@@ -152,6 +152,12 @@ $router->get('/admin_dashboard.php', [AdminController::class, 'dashboard']);
 $router->get('/admin_users.php', [AdminController::class, 'users']);
 
 // ===== ĐIỀU PHỐI YÊU CẦU =====
+
+// Route cho chức năng "Mua ngay"
+$router->post('/order/buyNow', [App\Controllers\OrderController::class, 'buyNow']);
+
+$router->post('/order/create', [App\Controllers\OrderController::class, 'create']);
+
 // Gọi phương thức dispatch để xử lý yêu cầu HTTP
 // Router cũng tự động tìm và include các tệp .php cũ nếu không tìm thấy route phù hợp
 $router->dispatch();

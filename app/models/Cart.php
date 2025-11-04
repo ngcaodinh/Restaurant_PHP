@@ -57,7 +57,7 @@ class Cart
      * @param int $quantity Số lượng.
      * @return bool
      */
-    public function addToCart($productId, $quantity)
+    public function addToCart($productId, $quantity): ?int
     {
         $cart_id = $this->getCartId();
         $stmt = $this->db->prepare("SELECT id, quantity FROM cart_items WHERE cart_id = ? AND dish_id = ?");
@@ -67,10 +67,12 @@ class Cart
         if ($cart_item) {
             $new_quantity = $cart_item['quantity'] + $quantity;
             $stmt = $this->db->prepare("UPDATE cart_items SET quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-            return $stmt->execute([$new_quantity, $cart_item['id']]);
+            $stmt->execute([$new_quantity, $cart_item['id']]);
+            return $cart_item['id'];
         } else {
             $stmt = $this->db->prepare("INSERT INTO cart_items (cart_id, dish_id, quantity) VALUES (?, ?, ?)");
-            return $stmt->execute([$cart_id, $productId, $quantity]);
+            $stmt->execute([$cart_id, $productId, $quantity]);
+            return $this->db->lastInsertId();
         }
     }
 

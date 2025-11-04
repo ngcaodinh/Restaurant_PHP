@@ -68,6 +68,9 @@ class CartController extends BaseController
         exit();
     }
 
+
+
+
     /**
      * Cập nhật số lượng sản phẩm trong giỏ hàng (AJAX)
      *

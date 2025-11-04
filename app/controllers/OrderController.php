@@ -81,6 +81,40 @@ class OrderController extends BaseController
     }
 
     /**
+     * Xử lý chức năng "Mua ngay" (AJAX)
+     *
+     * Thêm một sản phẩm vào giỏ hàng, lưu vào session và chuẩn bị chuyển hướng đến trang thanh toán.
+     * @return void
+     */
+    public function buyNow(): void
+    {
+        header('Content-Type: application/json');
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập để tiếp tục.']);
+            exit();
+        }
+
+        $productId = filter_input(INPUT_POST, 'product_id', FILTER_VALIDATE_INT);
+        if (!$productId) {
+            echo json_encode(['success' => false, 'message' => 'ID sản phẩm không hợp lệ.']);
+            exit();
+        }
+
+        // Thêm sản phẩm vào giỏ hàng và lấy cart_item_id
+        $cartItemId = $this->cartModel->addToCart($productId, 1);
+
+        if ($cartItemId) {
+            // Lưu chỉ sản phẩm này vào session để thanh toán
+            $_SESSION['checkout_items'] = [$cartItemId];
+            echo json_encode(['success' => true, 'redirect_url' => BASE_URL . 'checkout']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Không thể thêm sản phẩm vào giỏ hàng.']);
+        }
+        exit();
+    }
+
+
+    /**
      * Hiển thị trang thanh toán
      *
      * Lấy các sản phẩm đã được chọn từ giỏ hàng để hiển thị trên trang thanh toán.
@@ -91,7 +125,7 @@ class OrderController extends BaseController
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
         $userId = $_SESSION['user_id'];
 
-        // Xử lý khi người dùng nhấn "Thanh toán" từ trang giỏ hàng
+        // Xử lý khi người dùng nhấn "Thanh toán" từ trang giỏ hàng hoặc "Mua ngay"
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $selectedItemsJson = $_POST['selected_items'] ?? '[]';
             $selectedItemIds = json_decode($selectedItemsJson, true);
@@ -102,8 +136,9 @@ class OrderController extends BaseController
                 exit();
             }
 
-            // Lưu các sản phẩm được chọn vào session và chuyển hướng đến trang checkout (GET)
+            // Lưu các sản phẩm được chọn vào session để trang checkout (GET) có thể hiển thị chúng
             $_SESSION['checkout_items'] = $selectedItemIds;
+            // Chuyển hướng đến trang checkout bằng phương thức GET để hiển thị form thanh toán
             header('Location: ' . BASE_URL . 'checkout');
             exit();
         }
@@ -145,8 +180,8 @@ class OrderController extends BaseController
         $this->checkAuth(['Admin', 'User', 'PremiumUser']);
         $userId = $_SESSION['user_id'];
 
-        $checkoutItemsJson = $_POST['checkout_items'] ?? '[]';
-        $selectedItemIds = json_decode($checkoutItemsJson, true);
+        // Lấy danh sách sản phẩm cần thanh toán từ SESSION thay vì POST để bảo mật và ổn định hơn
+        $selectedItemIds = $_SESSION['checkout_items'] ?? [];
 
         $cartTotal = isset($_POST['total_price']) ? (float)$_POST['total_price'] : 0;
 
@@ -206,6 +241,8 @@ class OrderController extends BaseController
             $_SESSION['success_message'] = 'Đã đặt hàng thành công!';
             // Xóa các sản phẩm đã đặt khỏi giỏ hàng
             $this->cartModel->removeItemsByIds($selectedItemIds);
+            // Xóa các sản phẩm khỏi session checkout
+            unset($_SESSION['checkout_items']);
             header('Location: ' . BASE_URL . 'order-confirmation?id=' . $orderId);
         } else {
             $_SESSION['error_message'] = 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.';

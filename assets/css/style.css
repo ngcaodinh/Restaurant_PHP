@@ -1105,6 +1105,11 @@ footer {
   background: linear-gradient(45deg, #3b82f6, #1d4ed8);
 }
 
+.notification.error {
+  background: linear-gradient(45deg, #f87171, #ef4444);
+}
+
+
 .notification-content {
   display: flex;
   align-items: center;
@@ -1167,24 +1172,4 @@ section#dishes {
 .menu-nav {
   position: relative;
   /* Hoặc position: fixed nếu thanh điều hướng cố định */
-}
-
-/* thông báo chưa đăng nhập */
-.notification {
-  position: fixed;
-  top: 70px;
-  right: 20px;
-  padding: 15px 20px;
-  border-radius: 5px;
-  color: white;
-  z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.notification.success {
-  background-color: #28a745;
-}
-
-.notification.error {
-  background-color: #dc3545;
 }

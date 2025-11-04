@@ -1,7 +1,8 @@
 /* Custom Toast Notification */
 .toast-notification {
     background-color: #fff;
-    border-left: 5px solid #dc3545;
+    /* Màu viền sẽ được xác định bởi lớp cụ thể (success, danger, etc.) */
+    border-left: 5px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     display: flex;
@@ -19,13 +20,14 @@
 
 .toast-notification .toast-icon {
     font-size: 24px;
-    color: #dc3545;
+    /* Màu icon sẽ được xác định bởi lớp cụ thể */
+    color: #fff;
     margin-right: 15px;
 }
 
 .toast-notification .toast-message {
     font-size: 16px;
-    color: #333;
+    color: #fff;
 }
 
 .toast-notification .toast-close-btn {
@@ -1438,6 +1440,11 @@ body {
 
 .toast-success {
     background: linear-gradient(135deg, #28a745, #218838);
+    border-left-color: #218838;
+}
+
+.toast-success .toast-icon {
+    color: #fff;
 }
 
 .toast-danger {
