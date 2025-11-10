@@ -9,6 +9,18 @@
 // Lấy trang hiện tại để active menu item
 $current_page = basename($_SERVER['REQUEST_URI']);
 ?>
+
+<style>
+    /* Custom style to ensure text is white on active sidebar item */
+    .sidenav .navbar-nav .nav-item .nav-link.active {
+        color: white !important;
+    }
+
+    .sidenav .navbar-nav .nav-item .nav-link.active .nav-link-text {
+        color: white !important;
+    }
+</style>
+
 <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 my-2 bg-white" id="sidenav-main">
     <div class="sidenav-header">
         <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
@@ -35,7 +47,7 @@ $current_page = basename($_SERVER['REQUEST_URI']);
                         <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="material-symbols-rounded opacity-10">group</i>
                         </div>
-                        <span class="nav-link-text ms-1">Quản lý người dùng</span>
+                        <span class="nav-link-text ms-1">Quản lý tài khoản</span>
                     </a>
                 </li>
             <?php endif; ?>
