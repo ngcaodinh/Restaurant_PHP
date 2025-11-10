@@ -69,7 +69,18 @@
                                         </span>
                                     </div>
                                     <span class="order-badge badge-<?php echo strtolower(htmlspecialchars($order['status'])); ?>">
-                                        <?php echo htmlspecialchars($order['status']); ?>
+                                        <?php
+                                        $statusText = match ($order['status']) {
+                                            'Pending' => 'Chờ xác nhận',
+                                            'Confirmed' => 'Đã xác nhận',
+                                            'Preparing' => 'Đang chuẩn bị',
+                                            'Ready' => 'Sẵn sàng',
+                                            'Delivered' => 'Đã giao',
+                                            'Cancelled' => 'Đã hủy',
+                                            default => htmlspecialchars($order['status'])
+                                        };
+                                        echo $statusText;
+                                        ?>
                                     </span>
                                 </div>
 

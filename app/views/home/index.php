@@ -14,6 +14,39 @@
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/header.css">
 </head>
 
+<style>
+    .pagination.custom-pagination .page-item .page-link {
+        color: #6c757d;
+        border: none;
+        border-radius: 50%;
+        margin: 0 5px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .pagination.custom-pagination .page-item.active .page-link {
+        background-color: #ff8c00;
+        color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .pagination.custom-pagination .page-item:not(.active) .page-link:hover {
+        background-color: #f8f9fa;
+        color: #ff8c00;
+    }
+
+    .pagination.custom-pagination .page-item.disabled .page-link {
+        color: #ced4da;
+        background-color: transparent;
+    }
+</style>
+
+
 <body>
     <?php require_once __DIR__ . '/../../../templates/header.php'; ?>
 
@@ -126,6 +159,34 @@
                         </div>
                     <?php endforeach; ?>
                 </div>
+
+                <!-- Pagination -->
+                <?php if ($totalPages > 1): ?>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination custom-pagination justify-content-center mt-5">
+                            <!-- Previous Button -->
+                            <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?page=<?php echo $page - 1; ?>" aria-label="Previous">
+                                    <i class="fas fa-arrow-left"></i>
+                                </a>
+                            </li>
+
+                            <!-- Page Numbers -->
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor; ?>
+
+                            <!-- Next Button -->
+                            <li class="page-item <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?page=<?php echo $page + 1; ?>" aria-label="Next">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                <?php endif; ?>
             </div>
         </div>
     </section>

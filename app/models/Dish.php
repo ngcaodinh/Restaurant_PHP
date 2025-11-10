@@ -34,7 +34,7 @@ class Dish
      *
      * @return array Mảng các món ăn
      */
-    public function getAvailableWithCategory(): array
+    public function getAvailableWithCategory(int $limit = 100, int $offset = 0): array
     {
         $stmt = $this->db->prepare("
             SELECT d.id, d.name, d.price, d.description, d.image, d.sales_count, d.category_id, c.name AS category_name
@@ -42,7 +42,10 @@ class Dish
             LEFT JOIN categories c ON d.category_id = c.id
             WHERE d.status = 'Available' AND d.deleted_at IS NULL
             ORDER BY d.sales_count DESC
+            LIMIT :limit OFFSET :offset
         ");
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
         $dishes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -66,6 +69,19 @@ class Dish
 
         return $dishes;
     }
+
+    /**
+     * Lấy tổng số món ăn có sẵn.
+     *
+     * @return int
+     */
+    public function getTotalAvailableDishes(): int
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM dishes WHERE status = 'Available' AND deleted_at IS NULL");
+        $stmt->execute();
+        return (int) $stmt->fetchColumn();
+    }
+
 
     /**
      * Lấy tất cả món ăn với phân trang và bộ lọc

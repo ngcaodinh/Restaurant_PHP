@@ -39,9 +39,20 @@ class HomeController extends BaseController
             /** @var PDO $pdo */
             $pdo = Database::getInstance();
 
-            // Khởi tạo model Dish và lấy danh sách món ăn có sẵn
+            // Khởi tạo model Dish
             $dishModel = new Dish($pdo);
-            $dishes = $dishModel->getAvailableWithCategory();
+
+            // Logic phân trang
+            $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+            $limit = 6; // Số lượng món ăn mỗi trang
+            $offset = ($page - 1) * $limit;
+
+            // Lấy tổng số món ăn để tính toán số trang
+            $totalDishes = $dishModel->getTotalAvailableDishes();
+            $totalPages = ceil($totalDishes / $limit);
+
+            // Lấy danh sách món ăn cho trang hiện tại
+            $dishes = $dishModel->getAvailableWithCategory($limit, $offset);
 
             // Đánh dấu top 3 món bán chạy nhất (best sellers)
             // Danh sách đã được sắp xếp theo số lượng bán giảm dần
@@ -90,6 +101,6 @@ class HomeController extends BaseController
         }
 
         // Truyền dữ liệu vào view để hiển thị
-        $this->view('home/index', compact('errors', 'dishes', 'products_json', 'debug_raw', 'debug_processed'));
+        $this->view('home/index', compact('errors', 'dishes', 'products_json', 'debug_raw', 'debug_processed', 'page', 'totalPages'));
     }
 }
