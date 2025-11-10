@@ -247,6 +247,10 @@ class AdminController extends BaseController
         }
 
         $this->checkAuth();
+        if ($_SESSION['user_role'] !== 'Admin') {
+            $this->jsonResponse(['success' => false, 'message' => 'Bạn không có quyền thực hiện hành động này.']);
+            return;
+        }
 
         $userId = filter_input(INPUT_POST, 'user_id', FILTER_VALIDATE_INT);
         $name = trim($_POST['name'] ?? '');
