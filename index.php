@@ -21,7 +21,7 @@ use App\Controllers\AdminController;
 use App\Controllers\SearchController;
 use App\Controllers\FavoritesController;
 use App\Controllers\PurchaseHistory;
-use App\Controllers\PremiumController;
+
 
 // Khởi tạo đối tượng Router để xử lý định tuyến
 $router = new Router();
@@ -141,28 +141,11 @@ $router->post('/api/admin/user/update', [AdminController::class, 'updateUser']);
 // Route xóa người dùng
 $router->post('/api/admin/user/delete', [AdminController::class, 'deleteUser']);
 
-// ===== ĐỊNH TUYẾN PREMIUM USER =====
-// Route trang chủ premium (dashboard)
-$router->get('/premium', [PremiumController::class, 'dashboard']);
-$router->get('/premium/dashboard', [PremiumController::class, 'dashboard']);
-// Route quản lý món ăn
-$router->get('/premium/dishes', [PremiumController::class, 'dishes']);
-$router->get('/premium/manage_dishes', [PremiumController::class, 'dishes']); // Bí danh để rõ nghĩa
-// Route quản lý đơn hàng
-$router->get('/premium/orders', [PremiumController::class, 'orders']);
-// Route xem chi tiết đơn hàng (HTML view)
-$router->get('/premium/order/{id}', [PremiumController::class, 'orderDetail']);
-
-// Route lấy chi tiết đơn hàng (API JSON)
-$router->get('/api/premium/order/details/{id}', [PremiumController::class, 'getOrderDetails']);
-// Route tạo món ăn mới
-$router->post('/api/premium/dish/create', [PremiumController::class, 'addDish']);
-// Route cập nhật thông tin món ăn
-$router->post('/api/premium/dish/update', [PremiumController::class, 'updateDish']);
-// Route xóa món ăn
-$router->post('/api/premium/dish/delete', [PremiumController::class, 'deleteDish']);
-// Route cập nhật trạng thái đơn hàng
-$router->post('/api/premium/order/update-status', [PremiumController::class, 'updateOrderStatus']);
+// ===== ĐỊNH TUYẾN PREMIUM USER (SỬ DỤNG ADMIN CONTROLLER) =====
+// Các route này sẽ được xử lý bởi AdminController, với logic phân quyền bên trong
+$router->get('/premium/dashboard', [AdminController::class, 'dashboard']);
+$router->get('/premium/dishes', [AdminController::class, 'dishes']);
+$router->get('/premium/orders', [AdminController::class, 'orders']);
 
 // ===== ĐỊNH TUYẾN TÌM KIẾM =====
 // Route tìm kiếm món ăn

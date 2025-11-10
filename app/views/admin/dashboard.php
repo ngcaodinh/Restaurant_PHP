@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Admin Dashboard - CTUT Restaurant</title>
+    <title> Dashboard - CTUT Restaurant</title>
     <!--     Fonts and icons     -->
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
     <!-- Nucleo Icons -->
@@ -35,30 +35,32 @@
         <!-- End Navbar -->
         <div class="container-fluid py-2">
             <div class="row">
-                <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                    <div class="card">
-                        <div class="card-header p-2 ps-3">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <p class="text-sm mb-0 text-capitalize">Tổng người dùng</p>
-                                    <h4 class="mb-0"><?php echo $userStats['total_users'] ?? 0; ?></h4>
-                                </div>
-                                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
-                                    <i class="material-symbols-rounded opacity-10">group</i>
+                <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'Admin'): ?>
+                    <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                        <div class="card">
+                            <div class="card-header p-2 ps-3">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <p class="text-sm mb-0 text-capitalize">Tổng người dùng</p>
+                                        <h4 class="mb-0"><?php echo $userStats['total_users'] ?? 0; ?></h4>
+                                    </div>
+                                    <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
+                                        <i class="material-symbols-rounded opacity-10">group</i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <hr class="dark horizontal my-0">
-                        <div class="card-footer p-2 ps-3">
-                            <p class="mb-0 text-sm">
-                                <span class="text-<?php echo ($userStats['user_growth'] >= 0) ? 'success' : 'danger'; ?> font-weight-bolder">
-                                    <?php echo ($userStats['user_growth'] >= 0 ? '+' : '') . number_format($userStats['user_growth'], 2); ?>%
-                                </span>
-                                so với tháng trước
-                            </p>
+                            <hr class="dark horizontal my-0">
+                            <div class="card-footer p-2 ps-3">
+                                <p class="mb-0 text-sm">
+                                    <span class="text-<?php echo ($userStats['user_growth'] >= 0) ? 'success' : 'danger'; ?> font-weight-bolder">
+                                        <?php echo ($userStats['user_growth'] >= 0 ? '+' : '') . number_format($userStats['user_growth'], 2); ?>%
+                                    </span>
+                                    so với tháng trước
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                <?php endif; ?>
                 <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                     <div class="card">
                         <div class="card-header p-2 ps-3">

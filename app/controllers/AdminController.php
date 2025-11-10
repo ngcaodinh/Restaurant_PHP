@@ -26,9 +26,13 @@ class AdminController extends BaseController
 
     public function dashboard(): void
     {
-        $this->checkAdminAuth();
+        $this->checkAuth();
 
-        $userStats = $this->userModel->getUserStats();
+        $userStats = [];
+        if ($_SESSION['user_role'] === 'Admin') {
+            $userStats = $this->userModel->getUserStats();
+        }
+
         $dishStats = $this->dishModel->getDishStats();
         $orderStats = $this->orderModel->getOrderStats();
 
@@ -47,7 +51,13 @@ class AdminController extends BaseController
 
     public function users(): void
     {
-        $this->checkAdminAuth();
+        $this->checkAuth();
+        // Chỉ Admin mới có quyền truy cập trang này
+        if ($_SESSION['user_role'] !== 'Admin') {
+            $_SESSION['error_message'] = 'Bạn không có quyền truy cập trang này.';
+            header('Location: /');
+            exit();
+        }
 
         $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
         $limit = 20;
@@ -61,7 +71,7 @@ class AdminController extends BaseController
 
     public function dishes(): void
     {
-        $this->checkAdminAuth();
+        $this->checkAuth();
 
         $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
         $limit = 20;
@@ -87,7 +97,7 @@ class AdminController extends BaseController
 
     public function orders(): void
     {
-        $this->checkAdminAuth();
+        $this->checkAuth();
 
         $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
         $limit = 20;
@@ -101,7 +111,7 @@ class AdminController extends BaseController
 
     public function getOrderDetails(): void
     {
-        $this->checkAdminAuth();
+        $this->checkAuth();
 
         $orderId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
@@ -127,7 +137,7 @@ class AdminController extends BaseController
             return;
         }
 
-        $this->checkAdminAuth();
+        $this->checkAuth();
 
         $name = trim($_POST['name'] ?? '');
         $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT);
@@ -176,7 +186,7 @@ class AdminController extends BaseController
             return;
         }
 
-        $this->checkAdminAuth();
+        $this->checkAuth();
 
         $dishId = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
         $name = trim($_POST['name'] ?? '');
@@ -213,7 +223,7 @@ class AdminController extends BaseController
             return;
         }
 
-        $this->checkAdminAuth();
+        $this->checkAuth();
 
         $dishId = filter_input(INPUT_POST, 'dish_id', FILTER_VALIDATE_INT);
 
@@ -236,7 +246,7 @@ class AdminController extends BaseController
             return;
         }
 
-        $this->checkAdminAuth();
+        $this->checkAuth();
 
         $userId = filter_input(INPUT_POST, 'user_id', FILTER_VALIDATE_INT);
         $name = trim($_POST['name'] ?? '');
@@ -273,7 +283,7 @@ class AdminController extends BaseController
             return;
         }
 
-        $this->checkAdminAuth();
+        $this->checkAuth();
 
         $userId = filter_input(INPUT_POST, 'user_id', FILTER_VALIDATE_INT);
 
@@ -295,10 +305,20 @@ class AdminController extends BaseController
         }
     }
 
-    private function checkAdminAuth(): void
+    /**
+     * Kiểm tra xem người dùng có phải là Admin hoặc PremiumUser không.
+     */
+    private function checkAuth(): void
     {
-        if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'Admin') {
-            $_SESSION['error_message'] = 'Bạn không có quyền truy cập trang quản trị.';
+        if (!isset($_SESSION['user_id'])) {
+            $_SESSION['error_message'] = 'Vui lòng đăng nhập để tiếp tục.';
+            header('Location: ' . BASE_URL . 'login');
+            exit();
+        }
+
+        $allowedRoles = ['Admin', 'PremiumUser'];
+        if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], $allowedRoles)) {
+            $_SESSION['error_message'] = 'Bạn không có quyền truy cập trang này.';
             header('Location: /');
             exit();
         }

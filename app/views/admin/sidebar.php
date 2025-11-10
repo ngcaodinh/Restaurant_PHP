@@ -13,7 +13,7 @@ $current_page = basename($_SERVER['REQUEST_URI']);
     <div class="sidenav-header">
         <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
         <a class="navbar-brand px-4 py-3 m-0" href="<?php echo BASE_URL; ?>admin/dashboard">
-            <span class="ms-1 text-sm text-dark font-weight-bolder">CTUT Restaurant Admin</span>
+            <span class="ms-1 text-sm text-dark font-weight-bolder">CTUT Restaurant </span>
         </a>
     </div>
     <hr class="horizontal dark mt-0 mb-2">
@@ -28,15 +28,17 @@ $current_page = basename($_SERVER['REQUEST_URI']);
                     <span class="nav-link-text ms-1">Dashboard</span>
                 </a>
             </li>
-            <!-- Quản lý người dùng -->
-            <li class="nav-item">
-                <a class="nav-link text-dark <?php echo ($current_page == 'users') ? 'active bg-gradient-dark' : ''; ?>" href="<?php echo BASE_URL; ?>admin/users">
-                    <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="material-symbols-rounded opacity-10">group</i>
-                    </div>
-                    <span class="nav-link-text ms-1">Quản lý người dùng</span>
-                </a>
-            </li>
+            <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'Admin'): ?>
+                <!-- Quản lý người dùng -->
+                <li class="nav-item">
+                    <a class="nav-link text-dark <?php echo ($current_page == 'users') ? 'active bg-gradient-dark' : ''; ?>" href="<?php echo BASE_URL; ?>admin/users">
+                        <div class="text-dark text-center me-2 d-flex align-items-center justify-content-center">
+                            <i class="material-symbols-rounded opacity-10">group</i>
+                        </div>
+                        <span class="nav-link-text ms-1">Quản lý người dùng</span>
+                    </a>
+                </li>
+            <?php endif; ?>
             <!-- Quản lý món ăn -->
             <li class="nav-item">
                 <a class="nav-link text-dark <?php echo ($current_page == 'dishes' || $current_page == 'manage_dishes') ? 'active bg-gradient-dark' : ''; ?>" href="<?php echo BASE_URL; ?>admin/dishes">
