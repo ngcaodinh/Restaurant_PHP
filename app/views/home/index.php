@@ -112,7 +112,7 @@
                 </button>
             </div>
             <div class="best-seller-section">
-                <h2 class="best-seller-title">Top Món Bán Chạy</h2>
+                <h2 class="best-seller-title">Menu</h2>
                 <div class="dish-grid">
                     <?php foreach ($dishes as $dish): ?>
                         <div class="dish-card fade-in <?php echo $dish['is_best_seller'] ? 'best-seller' : ''; ?>"

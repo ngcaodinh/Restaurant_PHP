@@ -116,6 +116,26 @@ body {
     box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.2);
 }
 
+.see-more-container {
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 10px;
+    border-top: 1px dashed #eee;
+}
+
+.see-more-link {
+    color: #007bff;
+    text-decoration: none;
+    font-style: italic;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+.see-more-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
 .filter-input-wrapper i {
     position: absolute;
     right: 1rem;

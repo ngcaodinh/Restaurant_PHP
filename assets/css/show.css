@@ -33,3 +33,10 @@
     z-index: 1050;
     max-width: 400px;
 }
+
+
+.order-details-wrapper {
+    padding-top: 5rem;
+    /* ~80px */
+    padding-bottom: 3rem;
+}

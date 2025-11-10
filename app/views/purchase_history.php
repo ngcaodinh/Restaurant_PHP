@@ -86,7 +86,11 @@
 
                                 <div class="order-box-content">
                                     <?php if (!empty($order['items'])) : ?>
-                                        <?php foreach ($order['items'] as $item) : ?>
+                                        <?php
+                                        $itemsToShow = array_slice($order['items'], 0, 2);
+                                        $totalItems = count($order['items']);
+                                        ?>
+                                        <?php foreach ($itemsToShow as $item) : ?>
                                             <div class="order-product">
                                                 <img src="<?php echo htmlspecialchars($item['dish_image']); ?>"
                                                     alt="<?php echo htmlspecialchars($item['dish_name']); ?>"
@@ -100,6 +104,14 @@
                                                 </div>
                                             </div>
                                         <?php endforeach; ?>
+
+                                        <?php if ($totalItems > 2) : ?>
+                                            <div class="see-more-container">
+                                                <a href="<?php echo BASE_URL . 'order?id=' . $order['id']; ?>" class="see-more-link">
+                                                    Xem thêm <?php echo $totalItems - 2; ?> sản phẩm khác...
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
 
