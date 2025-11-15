@@ -50,6 +50,133 @@ function updateCounters() {
 }
 
 /**
+ * Tải danh sách món ăn cho trang được chỉ định qua AJAX
+ *
+ * @param {number} page - Số trang cần tải
+ * @return {void}
+ */
+function loadPage(page) {
+    // Hiển thị loading indicator
+    const dishGridContainer = document.getElementById('dish-grid-container');
+    const paginationContainer = document.getElementById('pagination-container');
+
+    if (dishGridContainer) {
+        dishGridContainer.innerHTML = '<div class="col-12 text-center py-5"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-3">Đang tải...</p></div>';
+    }
+
+    // Gửi yêu cầu AJAX
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', BASE_URL + 'api/dishes?page=' + page, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success) {
+                    // Cập nhật danh sách món ăn
+                    renderDishes(response.dishes);
+
+                    // Cập nhật phân trang
+                    if (paginationContainer) {
+                        paginationContainer.innerHTML = response.pagination;
+                    }
+
+                    // Cập nhật URL mà không reload trang
+                    if (window.history && window.history.pushState) {
+                        window.history.pushState({ page: page }, '', '?page=' + page);
+                    }
+
+                    // Cuộn lên đầu danh sách món ăn
+                    const dishesSection = document.getElementById('dishes');
+                    if (dishesSection) {
+                        dishesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    showNotification('⚠️ Không thể tải dữ liệu: ' + (response.message || 'Lỗi không xác định'), 'error');
+                }
+            } catch (e) {
+                console.error('Error parsing response:', e);
+                showNotification('⚠️ Có lỗi xảy ra khi tải dữ liệu!', 'error');
+            }
+        } else if (xhr.readyState === 4) {
+            showNotification('⚠️ Không thể kết nối đến server!', 'error');
+        }
+    };
+
+    xhr.send();
+}
+
+/**
+ * Render danh sách món ăn lên giao diện
+ *
+ * @param {Array} dishes - Mảng các món ăn cần hiển thị
+ * @return {void}
+ */
+function renderDishes(dishes) {
+    const dishGridContainer = document.getElementById('dish-grid-container');
+
+    if (!dishGridContainer) {
+        console.error('Dish grid container not found!');
+        return;
+    }
+
+    if (!dishes || dishes.length === 0) {
+        dishGridContainer.innerHTML = '<div class="col-12 text-center py-5"><p>Không có món ăn nào.</p></div>';
+        return;
+    }
+
+    let html = '';
+
+    dishes.forEach(dish => {
+        // Cập nhật object products để các hàm khác có thể sử dụng
+        products[dish.id] = dish;
+
+        html += `
+            <div class="dish-card fade-in ${dish.isBestSeller ? 'best-seller' : ''}"
+                data-dish-id="${dish.id}"
+                data-category="${dish.category}"
+                data-sales="${dish.salesCount}">
+                ${dish.isBestSeller ? `<div class="best-seller-badge">BEST SELLER</div><div class="trending-effect"></div>` : ''}
+                ${dish.salesCount > 100 ? `<div class="popularity-indicator"><i class="fas fa-chart-line"></i> Hot</div>` : ''}
+                <div class="dish-image">
+                    <img src="${dish.image}" alt="${dish.name}">
+                    <div class="sales-stats">
+                        <i class="fas fa-shopping-cart"></i> ${dish.salesCount} đã bán
+                    </div>
+                    <div class="dish-actions">
+                        <button class="action-btn" onclick="addToCart(${dish.id})">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                        <button class="action-btn wishlist" onclick="addToWishlist(${dish.id})">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                        <button class="action-btn" onclick="showDetails(${dish.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="dish-info">
+                    <h3>
+                        ${dish.name}
+                        <span class="dish-price">${dish.price}</span>
+                    </h3>
+                    <p>${dish.description}</p>
+                    <div class="dish-actions-bottom">
+                        <button class="btn btn-buy-now" onclick="buyNow(${dish.id})">
+                            <i class="fas fa-bolt"></i> Mua ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    dishGridContainer.innerHTML = html;
+}
+
+/**
  * Gửi yêu cầu AJAX đến server
  *
  * Hàm này gửi yêu cầu POST đến ajax_handler.php để xử lý các action
@@ -431,6 +558,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     xhr.send('action=get_counts');
     filterDishes('all');
+
+    // Xử lý sự kiện back/forward của trình duyệt
+    window.addEventListener('popstate', function (event) {
+        if (event.state && event.state.page) {
+            loadPage(event.state.page);
+        }
+    });
 
     const userIcon = document.querySelector('.user-icon');
     if (userIcon) {

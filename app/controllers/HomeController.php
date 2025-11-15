@@ -35,40 +35,44 @@ class HomeController extends BaseController
         $products_json = '[]';
 
         try {
-            // Lấy instance PDO từ Database singleton
             /** @var PDO $pdo */
             $pdo = Database::getInstance();
-
-            // Khởi tạo model Dish
             $dishModel = new Dish($pdo);
 
-            // Logic phân trang
             $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
-            $limit = 6; // Số lượng món ăn mỗi trang
-            $offset = ($page - 1) * $limit;
+            $limit = 6; // Số món ăn mỗi trang
+            $numBestSellers = 3;
 
-            // Lấy tổng số món ăn để tính toán số trang
-            $totalDishes = $dishModel->getTotalAvailableDishes();
-            $totalPages = ceil($totalDishes / $limit);
+            // Lấy top best sellers và ID của chúng
+            $bestSellers = $dishModel->getTopBestSellers($numBestSellers);
+            $bestSellerIds = array_map(fn($d) => $d['id'], $bestSellers);
 
-            // Lấy danh sách món ăn cho trang hiện tại
-            $dishes = $dishModel->getAvailableWithCategory($limit, $offset);
+            // Tính toán phân trang cho các món còn lại
+            $totalOtherDishes = $dishModel->getTotalAvailableDishesExcluding($bestSellerIds);
+            $totalPages = 1 + (int)ceil($totalOtherDishes / $limit);
 
-            // Đánh dấu top 3 món bán chạy nhất (best sellers)
-            // Danh sách đã được sắp xếp theo số lượng bán giảm dần
-            $best_seller_count = min(3, count($dishes));
-            foreach ($dishes as $index => &$dish) {
-                $dish['is_best_seller'] = $index < $best_seller_count;
-                $dish['is_top_best_seller'] = $index < $best_seller_count;
+            if ($page == 1) {
+                // Trang 1: 3 best sellers + (limit - 3) món khác
+                $otherDishesLimit = $limit - $numBestSellers;
+                $otherDishes = $dishModel->getAvailableExcluding($otherDishesLimit, 0, $bestSellerIds);
+                $dishes = array_merge($bestSellers, $otherDishes);
+            } else {
+                // Các trang khác: chỉ các món khác
+                $offset = ($page - 2) * $limit + ($limit - $numBestSellers);
+                $dishes = $dishModel->getAvailableExcluding($limit, $offset, $bestSellerIds);
             }
-            unset($dish); // Hủy reference để tránh lỗi
 
-            // Kiểm tra có món ăn nào không
+            // Đánh dấu is_top_best_seller cho JSON
+            foreach ($dishes as &$dish) {
+                $dish['is_top_best_seller'] = in_array($dish['id'], $bestSellerIds);
+            }
+            unset($dish);
+
             if (empty($dishes)) {
-                $errors[] = "Không tìm thấy món ăn nào với status = 'Available'.";
+                $errors[] = "Không tìm thấy món ăn nào.";
             }
 
-            // Chuyển đổi dữ liệu món ăn sang định dạng cho JavaScript
+            // Chuyển đổi dữ liệu cho JavaScript
             $products = array_map(function ($dish) {
                 return [
                     'id' => $dish['id'],
@@ -84,23 +88,143 @@ class HomeController extends BaseController
                 ];
             }, $dishes);
 
-            // Encode thành JSON để truyền cho JavaScript
             $products_json = json_encode($products, JSON_HEX_QUOT | JSON_HEX_APOS | JSON_UNESCAPED_UNICODE);
         } catch (\Throwable $e) {
-            // Xử lý lỗi và ghi log
             $errors[] = 'Lỗi truy vấn món ăn: ' . $e->getMessage();
             error_log('Query error: ' . $e->getMessage());
         }
 
-        // Tạo chuỗi debug để kiểm tra dữ liệu (tương thích với phiên bản cũ)
+        // Dữ liệu debug (nếu cần)
         $debug_raw = '';
         $debug_processed = '';
-        foreach ($dishes as $dish) {
-            $debug_raw .= htmlspecialchars($dish['name'] . ' -> ' . ($dish['category_name'] ?? '') . ', ');
-            $debug_processed .= htmlspecialchars($dish['name'] . ' -> ' . ($dish['category'] ?? '') . ', ');
+
+        // Truyền dữ liệu vào view
+        $this->view('home/index', compact('errors', 'dishes', 'products_json', 'debug_raw', 'debug_processed', 'page', 'totalPages'));
+    }
+
+    /**
+     * API endpoint để lấy danh sách món ăn qua AJAX
+     *
+     * @return void
+     */
+    public function getDishes(): void
+    {
+        header('Content-Type: application/json');
+
+        try {
+            /** @var PDO $pdo */
+            $pdo = Database::getInstance();
+            $dishModel = new Dish($pdo);
+
+            $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+            $limit = 6; // Số món ăn mỗi trang
+            $numBestSellers = 3;
+
+            // Lấy top best sellers và ID của chúng
+            $bestSellers = $dishModel->getTopBestSellers($numBestSellers);
+            $bestSellerIds = array_map(fn($d) => $d['id'], $bestSellers);
+
+            // Tính toán phân trang cho các món còn lại
+            $totalOtherDishes = $dishModel->getTotalAvailableDishesExcluding($bestSellerIds);
+            $totalPages = 1 + (int)ceil($totalOtherDishes / $limit);
+
+            if ($page == 1) {
+                // Trang 1: 3 best sellers + (limit - 3) món khác
+                $otherDishesLimit = $limit - $numBestSellers;
+                $otherDishes = $dishModel->getAvailableExcluding($otherDishesLimit, 0, $bestSellerIds);
+                $dishes = array_merge($bestSellers, $otherDishes);
+            } else {
+                // Các trang khác: chỉ các món khác
+                $offset = ($page - 2) * $limit + ($limit - $numBestSellers);
+                $dishes = $dishModel->getAvailableExcluding($limit, $offset, $bestSellerIds);
+            }
+
+            // Đánh dấu is_top_best_seller cho JSON
+            foreach ($dishes as &$dish) {
+                $dish['is_top_best_seller'] = in_array($dish['id'], $bestSellerIds);
+            }
+            unset($dish);
+
+            // Chuyển đổi dữ liệu cho JavaScript
+            $products = array_map(function ($dish) {
+                return [
+                    'id' => $dish['id'],
+                    'name' => $dish['name'],
+                    'price' => number_format($dish['price'], 0, ',', '.') . 'đ',
+                    'description' => $dish['description'],
+                    'image' => $dish['image_url'],
+                    'salesCount' => $dish['sales_count'],
+                    'isBestSeller' => $dish['is_best_seller'],
+                    'isTopBestSeller' => $dish['is_top_best_seller'],
+                    'category' => $dish['category'],
+                    'categoryName' => $dish['category_name'] ?? 'Không xác định',
+                ];
+            }, $dishes);
+
+            // Tạo HTML cho phân trang
+            $paginationHtml = $this->generatePaginationHtml($page, $totalPages);
+
+            // Trả về JSON
+            echo json_encode([
+                'success' => true,
+                'dishes' => $products,
+                'pagination' => $paginationHtml,
+                'currentPage' => $page,
+                'totalPages' => $totalPages
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (\Throwable $e) {
+            // Xử lý lỗi
+            error_log('API error (getDishes): ' . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi tải dữ liệu.'
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * Tạo HTML cho phân trang
+     *
+     * @param int $page Trang hiện tại
+     * @param int $totalPages Tổng số trang
+     * @return string HTML của phân trang
+     */
+    private function generatePaginationHtml(int $page, int $totalPages): string
+    {
+        if ($totalPages <= 1) {
+            return '';
         }
 
-        // Truyền dữ liệu vào view để hiển thị
-        $this->view('home/index', compact('errors', 'dishes', 'products_json', 'debug_raw', 'debug_processed', 'page', 'totalPages'));
+        $html = '<nav aria-label="Page navigation">';
+        $html .= '<ul class="pagination custom-pagination justify-content-center mt-5">';
+
+        // Previous Button
+        $disabledPrev = $page <= 1 ? 'disabled' : '';
+        $html .= '<li class="page-item ' . $disabledPrev . '">';
+        $html .= '<a class="page-link" href="javascript:void(0);" onclick="loadPage(' . ($page - 1) . ')" aria-label="Previous">';
+        $html .= '<i class="fas fa-arrow-left"></i>';
+        $html .= '</a>';
+        $html .= '</li>';
+
+        // Page Numbers
+        for ($i = 1; $i <= $totalPages; $i++) {
+            $active = $i == $page ? 'active' : '';
+            $html .= '<li class="page-item ' . $active . '">';
+            $html .= '<a class="page-link" href="javascript:void(0);" onclick="loadPage(' . $i . ')">' . $i . '</a>';
+            $html .= '</li>';
+        }
+
+        // Next Button
+        $disabledNext = $page >= $totalPages ? 'disabled' : '';
+        $html .= '<li class="page-item ' . $disabledNext . '">';
+        $html .= '<a class="page-link" href="javascript:void(0);" onclick="loadPage(' . ($page + 1) . ')" aria-label="Next">';
+        $html .= '<i class="fas fa-arrow-right"></i>';
+        $html .= '</a>';
+        $html .= '</li>';
+
+        $html .= '</ul>';
+        $html .= '</nav>';
+
+        return $html;
     }
 }

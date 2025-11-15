@@ -113,7 +113,7 @@
             </div>
             <div class="best-seller-section">
                 <h2 class="best-seller-title">Menu</h2>
-                <div class="dish-grid">
+                <div class="dish-grid" id="dish-grid-container">
                     <?php foreach ($dishes as $dish): ?>
                         <div class="dish-card fade-in <?php echo $dish['is_best_seller'] ? 'best-seller' : ''; ?>"
                             data-dish-id="<?php echo htmlspecialchars($dish['id'], ENT_QUOTES, 'UTF-8'); ?>"
@@ -161,32 +161,34 @@
                 </div>
 
                 <!-- Pagination -->
-                <?php if ($totalPages > 1): ?>
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination custom-pagination justify-content-center mt-5">
-                            <!-- Previous Button -->
-                            <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $page - 1; ?>" aria-label="Previous">
-                                    <i class="fas fa-arrow-left"></i>
-                                </a>
-                            </li>
-
-                            <!-- Page Numbers -->
-                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                <div id="pagination-container">
+                    <?php if ($totalPages > 1): ?>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination custom-pagination justify-content-center mt-5">
+                                <!-- Previous Button -->
+                                <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="javascript:void(0);" onclick="loadPage(<?php echo $page - 1; ?>)" aria-label="Previous">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </a>
                                 </li>
-                            <?php endfor; ?>
 
-                            <!-- Next Button -->
-                            <li class="page-item <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $page + 1; ?>" aria-label="Next">
-                                    <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                <?php endif; ?>
+                                <!-- Page Numbers -->
+                                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                    <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
+                                        <a class="page-link" href="javascript:void(0);" onclick="loadPage(<?php echo $i; ?>)"><?php echo $i; ?></a>
+                                    </li>
+                                <?php endfor; ?>
+
+                                <!-- Next Button -->
+                                <li class="page-item <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="javascript:void(0);" onclick="loadPage(<?php echo $page + 1; ?>)" aria-label="Next">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </section>

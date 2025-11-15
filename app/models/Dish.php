@@ -82,6 +82,123 @@ class Dish
         return (int) $stmt->fetchColumn();
     }
 
+    /**
+     * Lấy top 3 món bán chạy nhất (Best Sellers)
+     *
+     * @return array Mảng các món ăn bán chạy nhất
+     */
+    public function getTopBestSellers(int $limit = 3): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT d.id, d.name, d.price, d.description, d.image, d.sales_count, d.category_id, c.name AS category_name
+            FROM dishes d
+            LEFT JOIN categories c ON d.category_id = c.id
+            WHERE d.status = 'Available' AND d.deleted_at IS NULL
+            ORDER BY d.sales_count DESC
+            LIMIT :limit
+        ");
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $dishes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Xử lý dữ liệu món ăn
+        foreach ($dishes as &$dish) {
+            $dish['is_best_seller'] = true; // Đánh dấu là best seller
+            $category_name = $dish['category_name'] ?? 'unknown';
+
+            // Map tên danh mục sang slug
+            $categoryMap = [
+                'món chính' => 'mn-chnh',
+                'tráng miệng' => 'trng-ming',
+                'đồ uống' => '-ung',
+            ];
+            $dish['category'] = $categoryMap[$category_name] ?? strtolower(str_replace(' ', '-', preg_replace('/[^a-zA-Z0-9\s]/u', '', $category_name)));
+
+            // Set URL hình ảnh mặc định nếu không có
+            $dish['image_url'] = !empty($dish['image']) ? $dish['image'] : 'https://via.placeholder.com/300x250?text=No+Image';
+        }
+        unset($dish);
+
+        return $dishes;
+    }
+
+    /**
+     * Lấy danh sách món ăn có sẵn kèm thông tin danh mục, loại trừ top best sellers
+     *
+     * @param int $limit Số lượng món ăn tối đa
+     * @param int $offset Vị trí bắt đầu
+     * @param array $excludeIds Mảng các ID cần loại trừ
+     * @return array Mảng các món ăn
+     */
+    public function getAvailableExcluding(int $limit = 100, int $offset = 0, array $excludeIds = []): array
+    {
+        $sql = "
+            SELECT d.id, d.name, d.price, d.description, d.image, d.sales_count, d.category_id, c.name AS category_name
+            FROM dishes d
+            LEFT JOIN categories c ON d.category_id = c.id
+            WHERE d.status = 'Available' AND d.deleted_at IS NULL
+        ";
+
+        if (!empty($excludeIds)) {
+            $placeholders = implode(',', array_fill(0, count($excludeIds), '?'));
+            $sql .= " AND d.id NOT IN ($placeholders)";
+        }
+
+        $sql .= " ORDER BY d.sales_count DESC LIMIT ? OFFSET ?";
+
+        $stmt = $this->db->prepare($sql);
+
+        $params = [];
+        if (!empty($excludeIds)) {
+            $params = array_merge($params, $excludeIds);
+        }
+        $params[] = $limit;
+        $params[] = $offset;
+
+        $stmt->execute($params);
+        $dishes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Xử lý dữ liệu món ăn
+        foreach ($dishes as &$dish) {
+            $dish['is_best_seller'] = false;
+            $category_name = $dish['category_name'] ?? 'unknown';
+
+            // Map tên danh mục sang slug
+            $categoryMap = [
+                'món chính' => 'mn-chnh',
+                'tráng miệng' => 'trng-ming',
+                'đồ uống' => '-ung',
+            ];
+            $dish['category'] = $categoryMap[$category_name] ?? strtolower(str_replace(' ', '-', preg_replace('/[^a-zA-Z0-9\s]/u', '', $category_name)));
+
+            // Set URL hình ảnh mặc định nếu không có
+            $dish['image_url'] = !empty($dish['image']) ? $dish['image'] : 'https://via.placeholder.com/300x250?text=No+Image';
+        }
+        unset($dish);
+
+        return $dishes;
+    }
+
+    /**
+     * Lấy tổng số món ăn có sẵn, loại trừ các ID được chỉ định
+     *
+     * @param array $excludeIds Mảng các ID cần loại trừ
+     * @return int
+     */
+    public function getTotalAvailableDishesExcluding(array $excludeIds = []): int
+    {
+        $sql = "SELECT COUNT(*) FROM dishes WHERE status = 'Available' AND deleted_at IS NULL";
+
+        if (!empty($excludeIds)) {
+            $placeholders = implode(',', array_fill(0, count($excludeIds), '?'));
+            $sql .= " AND id NOT IN ($placeholders)";
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($excludeIds);
+        return (int) $stmt->fetchColumn();
+    }
+
 
     /**
      * Lấy tất cả món ăn với phân trang và bộ lọc

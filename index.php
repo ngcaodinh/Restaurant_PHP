@@ -151,6 +151,10 @@ $router->get('/premium/orders', [AdminController::class, 'orders']);
 // Route tìm kiếm món ăn
 $router->get('/api/search', [SearchController::class, 'search']);
 
+// ===== ĐỊNH TUYẾN PHÂN TRANG AJAX =====
+// Route lấy danh sách món ăn cho phân trang
+$router->get('/api/dishes', [HomeController::class, 'getDishes']);
+
 // ===== ĐỊNH TUYẾN TƯƠNG THÍCH NGƯỢC (Legacy URLs) =====
 // Giữ lại các URL cũ với đuôi .php để tương thích với phiên bản cũ
 $router->get('/login.php', [AuthController::class, 'showLogin']);
