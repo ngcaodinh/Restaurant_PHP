@@ -78,7 +78,7 @@
             </button>
 
             <div class="register-link">
-                Chưa có tài khoản? <a href="<?php echo BASE_URL; ?>register">Đăng ký ngay</a>
+                Chưa có tài khoản? <a href="/Restaurant_PHP/register.php"<?php echo BASE_URL; ?>register">Đăng ký ngay</a>
             </div>
         </div>
     </div>

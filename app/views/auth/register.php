@@ -83,7 +83,7 @@
                 Đăng ký với Google
             </button>
             <div class="login-link">
-                Đã có tài khoản? <a href="/login">Đăng nhập ngay</a>
+                Đã có tài khoản? <a href="<?php echo BASE_URL; ?>login">Đăng nhập ngay</a>
             </div>
         </div>
     </div>

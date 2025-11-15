@@ -31,7 +31,7 @@
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">Chi tiết đơn hàng #<?php echo $order['id']; ?></h5>
-                                    <a href="<?php echo BASE_URL; ?>orders" class="btn btn-outline-dark btn-sm d-inline-flex align-items-center">
+                                    <a href="<?php echo BASE_URL; ?>purchase-history" class="btn btn-outline-dark btn-sm d-inline-flex align-items-center">
                                         <i class="fas fa-arrow-left me-1"></i> Quay lại
                                     </a>
                                 </div>
