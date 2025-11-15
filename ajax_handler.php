@@ -53,6 +53,24 @@ switch ($action) {
             $response = ['success' => true, 'logged_in' => false];
         }
         break;
+    case 'get_counts':
+        // Lấy số lượng giỏ hàng và wishlist
+        if (is_logged_in()) {
+            $cart_count = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
+            $wishlist_count = get_wishlist_count();
+            $response = [
+                'success' => true,
+                'cart_count' => $cart_count,
+                'wishlist_count' => $wishlist_count
+            ];
+        } else {
+            $response = [
+                'success' => true,
+                'cart_count' => 0,
+                'wishlist_count' => 0
+            ];
+        }
+        break;
     case 'search':
         // Chức năng tìm kiếm (có thể được triển khai sau)
         break;

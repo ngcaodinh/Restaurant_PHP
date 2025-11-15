@@ -111,8 +111,18 @@ function addToWishlist(dishId) {
     }
     sendAjaxRequest('add_to_wishlist', dishId, (response) => {
         if (response.success) {
-            showNotification(`❤️ Đã thêm "${dish.name}" vào danh sách yêu thích!`, 'success');
-            updateCounters();
+            // Hiển thị thông báo tùy theo action (added hoặc removed)
+            if (response.action === 'added') {
+                showNotification(`❤️ Đã thêm "${dish.name}" vào danh sách yêu thích!`, 'success');
+            } else if (response.action === 'removed') {
+                showNotification(`🗑️ Đã xóa "${dish.name}" khỏi danh sách yêu thích!`, 'info');
+            }
+
+            // Cập nhật số lượng wishlist từ server
+            const wishlistCountEl = document.getElementById('wishlist-count');
+            if (wishlistCountEl && response.wishlist_count !== undefined) {
+                wishlistCountEl.textContent = response.wishlist_count;
+            }
         } else {
             showNotification('Vui lòng đăng nhập để tiếp tục', 'error');
         }
@@ -337,14 +347,14 @@ function addToCart(dishId) {
     sendAjaxRequest('add_to_cart', dishId, (response) => {
         if (response.success) {
             showNotification(`✅ Đã thêm "${dish.name}" vào giỏ hàng!`, 'success');
-            const existingItem = cart.find(item => item.id === dishId);
-            if (existingItem) {
-                existingItem.quantity = (existingItem.quantity || 1) + 1;
-            } else {
-                cart.push({ ...dish, quantity: 1 });
+
+            // Cập nhật số lượng giỏ hàng từ server
+            const cartCountEl = document.getElementById('cart-count');
+            if (cartCountEl && response.cart_count !== undefined) {
+                cartCountEl.textContent = response.cart_count;
             }
-            updateCounters();
-            updateSalesCount(dishId);
+
+            // Không tự động tăng sales_count vì nó chỉ nên tăng khi đơn hàng hoàn thành
         } else {
             showNotification(response.message || '⚠️ Lỗi khi thêm món vào giỏ hàng!', 'error');
             if (response.message.includes('đăng nhập')) {
@@ -398,34 +408,9 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-
-
-function updateSalesCount(dishId) {
-    if (products[dishId]) {
-        products[dishId].salesCount++;
-        const card = document.querySelector(`[data-dish-id="${dishId}"]`);
-        if (card) {
-            card.setAttribute('data-sales', products[dishId].salesCount);
-            const salesStats = card.querySelector('.sales-stats');
-            if (salesStats) {
-                salesStats.innerHTML = `<i class="fas fa-shopping-cart"></i> ${products[dishId].salesCount} đã bán`;
-            }
-            if (products[dishId].salesCount > 100) {
-                const popularityIndicator = card.querySelector('.popularity-indicator');
-                if (!popularityIndicator) {
-                    const indicator = document.createElement('div');
-                    indicator.className = 'popularity-indicator';
-                    indicator.innerHTML = '<i class="fas fa-chart-line"></i> Hot';
-                    card.appendChild(indicator);
-                }
-            }
-        }
-    }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, products:', products);
-    // Kiểm tra trạng thái đăng nhập
+    // Lấy số lượng giỏ hàng và wishlist ban đầu
     const xhr = new XMLHttpRequest();
     xhr.open('POST', BASE_URL + 'ajax_handler.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -433,17 +418,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
             try {
                 const response = JSON.parse(xhr.responseText);
-                if (!response.is_logged_in) {
-                    cart = [];
-                    wishlist = [];
-                    updateCounters();
+                if (response.success) {
+                    const cartCountEl = document.getElementById('cart-count');
+                    const wishlistCountEl = document.getElementById('wishlist-count');
+                    if (cartCountEl) cartCountEl.textContent = response.cart_count || 0;
+                    if (wishlistCountEl) wishlistCountEl.textContent = response.wishlist_count || 0;
                 }
             } catch (e) {
-                console.error('Error parsing login check response:', e);
+                console.error('Error parsing counts response:', e);
             }
         }
     };
-    xhr.send('action=check_login');
+    xhr.send('action=get_counts');
     filterDishes('all');
 
     const userIcon = document.querySelector('.user-icon');
