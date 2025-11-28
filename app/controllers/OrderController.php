@@ -322,7 +322,8 @@ class OrderController extends BaseController
             return;
         }
 
-        $this->checkAuth(['Admin']);
+        $this->checkAuth(['Admin', 'PremiumUser']);
+
 
         $orderId = filter_input(INPUT_POST, 'order_id', FILTER_VALIDATE_INT);
         $status = trim($_POST['status'] ?? '');
