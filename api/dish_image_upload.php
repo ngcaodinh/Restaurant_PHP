@@ -4,7 +4,7 @@ require_once __DIR__ . '/../core/bootstrap.php';
 header('Content-Type: application/json');
 
 // Check admin authentication
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'Admin') {
+if (!isset($_SESSION['user_id']) && ($_SESSION['user_role'] === 'Admin' || $_SESSION['user_role'] === 'PremiumUser')) {
     echo json_encode(['success' => false, 'message' => 'Bạn không có quyền thực hiện hành động này.']);
     exit();
 }
